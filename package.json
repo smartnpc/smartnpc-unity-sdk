@@ -5,12 +5,12 @@
   "description": "AI-Powered NPCs",
   "unity": "2019.1",
   "unityRelease": "0b5",
- "keywords": [
-    "smartnpc",
-    "npc",
-    "ai",
-    "artificial",
-    "intelligence"
+  "keywords": [
+      "smartnpc",
+      "npc",
+      "ai",
+      "artificial",
+      "intelligence"
   ],
   "author": {
     "name": "SmartNPC",
