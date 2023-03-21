@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SmartNPC
@@ -10,7 +11,11 @@ namespace SmartNPC
 
         private SmartNPCConnection connection;
 
-        public SmartNPCChat Chat { get; private set; }
+        private SmartNPCChat _chat = new SmartNPCChat();
+
+        private SmartNPCCharacterInfo _info;
+
+        private List<Action> OnReadyListeners = new List<Action>();
 
         void Start()
         {
@@ -24,15 +29,54 @@ namespace SmartNPC
 
             if (player == null) throw new Exception("Must place a player anywhere in the scene");
 
-            Chat = new SmartNPCChat(connection, _characterId, player);
+            _chat.OnReady((List<SmartNPCMessage> messages) => {
+                if (_info != null) OnReadyListeners.ForEach((Action listener) => listener());
+            });
+
+            connection.OnReady(() => {
+                GetInfo();
+
+                _chat.Init(connection, _characterId, player);
+            });
         }
 
-        public void GetInfo(RequestCallbacks<SmartNPCCharacterInfo> callbacks) {
+        public SmartNPCChat Chat {
+            get {
+                return _chat;
+            }
+        }
+
+        public SmartNPCCharacterInfo Info {
+            get {
+                return _info;
+            }
+        }
+
+        public void OnReady(Action listener)
+        {
+            OnReadyListeners.Add(listener);
+
+            if (IsReady) listener();
+        }
+
+        public bool IsReady {
+            get {
+                return _info != null && _chat.IsReady;
+            }
+        }
+
+        private void GetInfo(RequestCallbacks<SmartNPCCharacterInfo> callbacks = null) {
             connection.Request<SmartNPCCharacterInfo>(new RequestOptions<SmartNPCCharacterInfo> {
                 Method = "GET",
                 Uri = "project/" + connection.Project + "/character/" + _characterId,
-                OnSuccess = callbacks.OnSuccess,
-                OnError = callbacks.OnError
+                OnSuccess = (SmartNPCCharacterInfo info) => {
+                    _info = info;
+
+                    if (callbacks?.OnSuccess != null) callbacks?.OnSuccess(info);
+                    
+                    if (_chat.IsReady) OnReadyListeners.ForEach((Action listener) => listener());
+                },
+                OnError = callbacks?.OnError
             });
         }
     }
