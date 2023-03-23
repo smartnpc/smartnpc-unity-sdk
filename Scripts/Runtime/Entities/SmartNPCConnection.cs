@@ -51,6 +51,22 @@ namespace SmartNPC
             OnErrorListeners.Add(listener);
         }
 
+        public void OffReady(Action listener)
+        {
+            OnReadyListeners.Remove(listener);
+        }
+
+        public void OffError(Action<RequestException> listener)
+        {
+            OnErrorListeners.Remove(listener);
+        }
+
+        public void RemoveAllListeners()
+        {
+            OnReadyListeners.Clear();
+            OnErrorListeners.Clear();
+        }
+
         public string Project {
             get {
                 return parsedToken?.project;

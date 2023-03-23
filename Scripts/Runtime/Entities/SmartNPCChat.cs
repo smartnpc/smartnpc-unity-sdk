@@ -18,6 +18,7 @@ namespace SmartNPC
         private List<Action<SmartNPCMessage>> OnMessageErrorListeners = new List<Action<SmartNPCMessage>>();
         private List<Action<List<SmartNPCMessage>>> OnReadyListeners = new List<Action<List<SmartNPCMessage>>>();
         private List<Action<List<SmartNPCMessage>>> OnMessagesChangeListeners = new List<Action<List<SmartNPCMessage>>>();
+        private List<Action<RequestException>> OnMessageHistoryErrorListeners = new List<Action<RequestException>>();
 
         public void Init(SmartNPCConnection connection, string characterId, SmartNPCPlayer player)
         {
@@ -32,6 +33,13 @@ namespace SmartNPC
             get {
                 return _messages;
             }
+        }
+
+        public void OnReady(Action<List<SmartNPCMessage>> listener)
+        {
+            OnReadyListeners.Add(listener);
+
+            if (IsReady) listener(_messages);
         }
 
         public void OnMessageStart(Action<SmartNPCMessage> listener)
@@ -54,16 +62,60 @@ namespace SmartNPC
             OnMessageErrorListeners.Add(listener);
         }
 
+        public void OnMessageHistoryError(Action<RequestException> listener)
+        {
+            OnMessageHistoryErrorListeners.Add(listener);
+        }
+
         public void OnMessagesChange(Action<List<SmartNPCMessage>> listener)
         {
             OnMessagesChangeListeners.Add(listener);
         }
 
-        public void OnReady(Action<List<SmartNPCMessage>> listener)
+        public void OffReady(Action<List<SmartNPCMessage>> listener)
         {
-            OnReadyListeners.Add(listener);
+            OnReadyListeners.Remove(listener);
+        }
 
-            if (IsReady) listener(_messages);
+        public void OffMessageStart(Action<SmartNPCMessage> listener)
+        {
+            OnMessageStartListeners.Remove(listener);
+        }
+
+        public void OffMessageProgress(Action<SmartNPCMessage> listener)
+        {
+            OnMessageProgressListeners.Remove(listener);
+        }
+
+        public void OffMessageComplete(Action<SmartNPCMessage> listener)
+        {
+            OnMessageCompleteListeners.Remove(listener);
+        }
+
+        public void OffMessageError(Action<SmartNPCMessage> listener)
+        {
+            OnMessageErrorListeners.Remove(listener);
+        }
+
+        public void OffMessageHistoryError(Action<RequestException> listener)
+        {
+            OnMessageHistoryErrorListeners.Remove(listener);
+        }
+
+        public void OffMessagesChange(Action<List<SmartNPCMessage>> listener)
+        {
+            OnMessagesChangeListeners.Remove(listener);
+        }
+
+        public void RemoveAllListeners()
+        {
+            OnReadyListeners.Clear();
+            OnMessageStartListeners.Clear();
+            OnMessageProgressListeners.Clear();
+            OnMessageCompleteListeners.Clear();
+            OnMessageErrorListeners.Clear();
+            OnMessageHistoryErrorListeners.Clear();
+            OnMessagesChangeListeners.Clear();
         }
 
         public bool IsReady {
@@ -88,7 +140,11 @@ namespace SmartNPC
 
                     DispatchEvent<List<SmartNPCMessage>>(OnMessagesChangeListeners, _messages);
                 },
-                OnError = callbacks?.OnError
+                OnError = (RequestException error) => {
+                    DispatchEvent<RequestException>(OnMessageHistoryErrorListeners, error);
+
+                    if (callbacks?.OnError != null) callbacks?.OnError(error);
+                }
             });
         }
 

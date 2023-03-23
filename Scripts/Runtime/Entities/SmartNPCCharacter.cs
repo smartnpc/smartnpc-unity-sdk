@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Proyecto26;
 
 namespace SmartNPC
 {
@@ -9,35 +10,48 @@ namespace SmartNPC
         [SerializeField]
         private string _characterId;
 
-        private SmartNPCConnection connection;
+        private SmartNPCConnection _connection;
 
         private SmartNPCChat _chat = new SmartNPCChat();
 
+        private SmartNPCPlayer _player;
         private SmartNPCCharacterInfo _info;
 
         private List<Action> OnReadyListeners = new List<Action>();
+
+        private List<Action<RequestException>> OnErrorListeners = new List<Action<RequestException>>();
 
         void Start()
         {
             if (_characterId == "") throw new Exception("Must specify Character Id");
 
-            connection = FindObjectOfType<SmartNPCConnection>();
+            _connection = FindObjectOfType<SmartNPCConnection>();
 
-            if (connection == null) throw new Exception("Must place a connection anywhere in the scene");
+            if (_connection == null) throw new Exception("Must place a connection anywhere in the scene");
 
-            SmartNPCPlayer player = FindObjectOfType<SmartNPCPlayer>();
+            _player = FindObjectOfType<SmartNPCPlayer>();
 
-            if (player == null) throw new Exception("Must place a player anywhere in the scene");
+            if (_player == null) throw new Exception("Must place a player anywhere in the scene");
 
-            _chat.OnReady((List<SmartNPCMessage> messages) => {
-                if (_info != null) OnReadyListeners.ForEach((Action listener) => listener());
-            });
+            _chat.OnReady(OnChatReady);
+            _chat.OnMessageHistoryError(DispatchError);
 
-            connection.OnReady(() => {
-                GetInfo();
+            _connection.OnReady(OnConnectionReady);
+            _connection.OnError(DispatchError);
+        }
 
-                _chat.Init(connection, _characterId, player);
-            });
+        private void OnChatReady(List<SmartNPCMessage> messages) {
+            if (_info != null) OnReadyListeners.ForEach((Action listener) => listener());
+        }
+
+        private void OnConnectionReady() {
+            GetInfo();
+
+            _chat.Init(_connection, _characterId, _player);
+        }
+
+        private void DispatchError(RequestException error) {
+            OnErrorListeners.ForEach((Action<RequestException> listener) => listener(error));
         }
 
         public SmartNPCChat Chat {
@@ -59,6 +73,33 @@ namespace SmartNPC
             if (IsReady) listener();
         }
 
+        public void OnError(Action<RequestException> listener)
+        {
+            OnErrorListeners.Add(listener);
+        }
+
+        public void OffReady(Action listener)
+        {
+            OnReadyListeners.Remove(listener);
+        }
+
+        public void OffError(Action<RequestException> listener)
+        {
+            OnErrorListeners.Add(listener);
+        }
+
+        public void RemoveAllListeners()
+        {
+            OnReadyListeners.Clear();
+            OnErrorListeners.Clear();
+
+            _chat.OffReady(OnChatReady);
+            _chat.OffMessageHistoryError(DispatchError);
+
+            _connection.OffReady(OnConnectionReady);
+            _connection.OffError(DispatchError);
+        }
+
         public bool IsReady {
             get {
                 return _info != null && _chat.IsReady;
@@ -66,9 +107,9 @@ namespace SmartNPC
         }
 
         private void GetInfo(RequestCallbacks<SmartNPCCharacterInfo> callbacks = null) {
-            connection.Request<SmartNPCCharacterInfo>(new RequestOptions<SmartNPCCharacterInfo> {
+            _connection.Request<SmartNPCCharacterInfo>(new RequestOptions<SmartNPCCharacterInfo> {
                 Method = "GET",
-                Uri = "project/" + connection.Project + "/character/" + _characterId,
+                Uri = "project/" + _connection.Project + "/character/" + _characterId,
                 OnSuccess = (SmartNPCCharacterInfo info) => {
                     _info = info;
 
