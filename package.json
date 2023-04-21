@@ -1,13 +1,14 @@
 {
   "name": "ai.smartnpc.client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "displayName": "SmartNPC",
-  "description": "AI-Powered NPCs",
+  "description": "AI-Powered Characters",
   "unity": "2019.1",
   "unityRelease": "0b5",
   "keywords": [
       "smartnpc",
       "npc",
+      "character",
       "ai",
       "artificial",
       "intelligence"
@@ -16,5 +17,8 @@
     "name": "SmartNPC",
     "email": "support@smartnpc.ai",
     "url": "https://smartnpc.ai"
+  },
+  "dependencies": {
+    "com.itisnajim.socketiounity": "https://github.com/itisnajim/SocketIOUnity.git"
   }
 }
