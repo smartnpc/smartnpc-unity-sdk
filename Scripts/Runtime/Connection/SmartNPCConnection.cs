@@ -24,7 +24,7 @@ namespace SmartNPC
 
         [SerializeField] private string _host;
 
-        private const string DEFAULT_HOST = "wss://api.smartnpc.ai/v1";
+        private const string DEFAULT_HOST = "wss://api.smartnpc.ai";
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
         private SocketIOUnity socket;
 
