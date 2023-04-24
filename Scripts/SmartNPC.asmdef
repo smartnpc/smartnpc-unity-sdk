@@ -1,7 +1,9 @@
 {
     "name": "SmartNPC",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:061c2de75e4e9904e8aa2dfd18fe2e20"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
