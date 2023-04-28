@@ -7,22 +7,28 @@ using UnityEngine.Networking;
 
 namespace SmartNPC
 {
-    public class SmartNPCVoice : MonoBehaviour
+    public class Voice
     {
-        [SerializeField] [Range(0.0f, 1.0f)] private float _volume = 1;
-
         private List<VoiceMessage> queue = new List<VoiceMessage>();
         private int index = -1;
         private AudioSource current = null;
         private bool _playing = false;
         private bool _streamComplete = false;
         private bool _complete = false;
+        private SmartNPCCharacter _character;
 
         public event EventHandler OnVoiceStart;
         public event EventHandler<MessageResponse> OnVoiceProgress;
         public event EventHandler OnVoiceComplete;
+        public event EventHandler OnPlayLastChunk;
 
-        public void Reset() {
+        public Voice(SmartNPCCharacter character)
+        {
+            _character = character;
+        }
+
+        public void Reset()
+        {
             index = -1;
             current = null;
 
@@ -57,16 +63,20 @@ namespace SmartNPC
 
             OnVoiceProgress?.Invoke(this, item.rawResponse);
 
+            if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk?.Invoke(this, EventArgs.Empty);
+
             current = item.voice;
 
             current.Play();
         }
 
-        private void OnFinishPlayChunk() {
+        private void OnFinishPlayChunk()
+        {
             _playing = false;
 
             if (index < queue.Count - 1) PlayNext();
-            else if (_streamComplete) {
+            else if (_streamComplete)
+            {
                 current = null;
 
                 _complete = true;
@@ -75,12 +85,13 @@ namespace SmartNPC
             }
         }
 
-        void Update() {
+        public void CheckFinishedPlayingChunk()
+        {
             if (current != null && !current.isPlaying)
             {
-                OnFinishPlayChunk();
-
                 current = null;
+
+                OnFinishPlayChunk();
             }
         }
 
@@ -93,7 +104,7 @@ namespace SmartNPC
 
         private async Task<AudioSource> CreateVoice(string base64)
         {
-            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
+            AudioSource audioSource = _character.gameObject.AddComponent<AudioSource>();
 
             byte[] audioBytes = Convert.FromBase64String(base64);
             string tempPath = Application.persistentDataPath + System.Guid.NewGuid().ToString();
@@ -110,7 +121,7 @@ namespace SmartNPC
             else
             {
                 audioSource.clip = DownloadHandlerAudioClip.GetContent(request);
-                audioSource.volume = _volume;
+                audioSource.volume = Volume;
             }
 
             File.Delete(tempPath);
@@ -118,9 +129,14 @@ namespace SmartNPC
             return audioSource;
         }
 
+        public bool Enabled
+        {
+          get { return _character.Connection.VoiceEnabled; }
+        }
+
         public float Volume
         {
-          get { return _volume; }
+          get { return _character.Connection.VoiceVolume; }
         }
 
         public bool Playing
