@@ -20,6 +20,10 @@ namespace SmartNPC
 
         [SerializeField] private string _playerName;
 
+        [Header("Voice")]
+        [SerializeField] private bool _voiceEnabled = true;
+        [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
+
         [Header("Advanced Settings")]
 
         [SerializeField] private string _host;
@@ -190,6 +194,16 @@ namespace SmartNPC
         public string PlayerName
         {
             get { return _playerName; }
+        }
+
+        public bool VoiceEnabled
+        {
+            get { return _voiceEnabled; }
+        }
+
+        public float VoiceVolume
+        {
+            get { return _voiceVolume; }
         }
     }
 }

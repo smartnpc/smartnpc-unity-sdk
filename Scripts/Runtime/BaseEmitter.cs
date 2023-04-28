@@ -11,9 +11,18 @@ namespace SmartNPC
         
         private List<Action> invokeOnUpdateActions = new List<Action>();
 
-        void Update() {
-            if (invokeOnUpdateActions.Count > 0) {
-                invokeOnUpdateActions.ForEach(action => action());
+        protected virtual void Update()
+        {
+            if (invokeOnUpdateActions.Count > 0)
+            {
+                try
+                {
+                    invokeOnUpdateActions.ForEach(action => action());
+                }
+                catch (Exception)
+                {
+                    // InvalidOperationException: Collection was modified; enumeration operation may not execute.
+                }
 
                 invokeOnUpdateActions.Clear();
             }
@@ -23,13 +32,16 @@ namespace SmartNPC
         {
             ready = true;
             
-            OnReadyListeners?.Invoke(this, EventArgs.Empty);
+            InvokeOnUpdate(() => {
+                OnReadyListeners?.Invoke(this, EventArgs.Empty);
+            });
         }
 
         public void OnReady(Action callback)
         {
             if (ready) callback();
-            else {
+            else
+            {
                 EventHandler listener = null;
 
                 listener = (sender, e) => {
@@ -52,6 +64,11 @@ namespace SmartNPC
         public virtual void Dispose()
         {
             invokeOnUpdateActions.Clear();
+        }
+        
+        public bool IsReady
+        {
+            get { return ready; }
         }
     }
 }
