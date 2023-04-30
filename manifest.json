@@ -4,6 +4,6 @@
   "displayName": "SmartNPC",
   "description": "AI-Powered Characters",
   "dependencies": {
-	"com.itisnajim.socketiounity": "https://github.com/itisnajim/SocketIOUnity.git"
+	"com.proyecto26.restclient": "https://github.com/proyecto26/RestClient.git"
   }
 }
