@@ -1,0 +1,9 @@
+{
+  "name": "ai.smartnpc.client",
+  "version": "0.1.4",
+  "displayName": "SmartNPC",
+  "description": "AI-Powered Characters",
+  "dependencies": {
+	"com.proyecto26.restclient": "https://github.com/proyecto26/RestClient.git"
+  }
+}
