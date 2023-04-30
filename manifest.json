@@ -1,0 +1,9 @@
+{
+  "name": "ai.smartnpc.client",
+  "version": "0.1.4",
+  "displayName": "SmartNPC",
+  "description": "AI-Powered Characters",
+  "dependencies": {
+	"com.itisnajim.socketiounity": "https://github.com/itisnajim/SocketIOUnity.git"
+  }
+}
