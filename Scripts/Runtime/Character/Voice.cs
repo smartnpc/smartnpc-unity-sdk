@@ -4,27 +4,48 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Events;
 
 namespace SmartNPC
 {
-    public class Voice
+    public class Voice : MonoBehaviour
     {
         private List<VoiceMessage> queue = new List<VoiceMessage>();
+        private SmartNPCConnection _connection;
         private int index = -1;
         private AudioSource current = null;
         private bool _playing = false;
         private bool _streamComplete = false;
         private bool _complete = false;
-        private SmartNPCCharacter _character;
 
-        public event EventHandler OnVoiceStart;
-        public event EventHandler<MessageResponse> OnVoiceProgress;
-        public event EventHandler OnVoiceComplete;
-        public event EventHandler OnPlayLastChunk;
+       public readonly UnityEvent OnVoiceStart = new UnityEvent();
+       public readonly UnityEvent<MessageResponse> OnVoiceProgress = new UnityEvent<MessageResponse>();
+       public readonly UnityEvent OnVoiceComplete = new UnityEvent();
+       public readonly UnityEvent OnPlayLastChunk = new UnityEvent();
 
-        public Voice(SmartNPCCharacter character)
+        void Awake()
         {
-            _character = character;
+            _connection = FindObjectOfType<SmartNPCConnection>();
+        }
+
+        void Update()
+        {
+            if (current != null && !current.isPlaying)
+            {
+                Destroy(current);
+
+                current = null;
+
+                OnFinishPlayChunk();
+            }
+        }
+
+        public void Dispose()
+        {
+            OnVoiceStart.RemoveAllListeners();
+            OnVoiceProgress.RemoveAllListeners();
+            OnVoiceComplete.RemoveAllListeners();
+            OnPlayLastChunk.RemoveAllListeners();
         }
 
         public void Reset()
@@ -59,11 +80,11 @@ namespace SmartNPC
 
             _playing = true;
 
-            if (index == 0) OnVoiceStart?.Invoke(this, EventArgs.Empty);
+            if (index == 0) OnVoiceStart.Invoke();
 
-            OnVoiceProgress?.Invoke(this, item.rawResponse);
+            OnVoiceProgress.Invoke(item.rawResponse);
 
-            if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk?.Invoke(this, EventArgs.Empty);
+            if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk.Invoke();
 
             current = item.voice;
 
@@ -81,17 +102,7 @@ namespace SmartNPC
 
                 _complete = true;
 
-                OnVoiceComplete?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public void CheckFinishedPlayingChunk()
-        {
-            if (current != null && !current.isPlaying)
-            {
-                current = null;
-
-                OnFinishPlayChunk();
+                OnVoiceComplete.Invoke();
             }
         }
 
@@ -104,7 +115,7 @@ namespace SmartNPC
 
         private async Task<AudioSource> CreateVoice(string base64)
         {
-            AudioSource audioSource = _character.gameObject.AddComponent<AudioSource>();
+            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
 
             byte[] audioBytes = Convert.FromBase64String(base64);
             string tempPath = Application.persistentDataPath + System.Guid.NewGuid().ToString();
@@ -131,12 +142,12 @@ namespace SmartNPC
 
         public bool Enabled
         {
-          get { return _character.Connection.VoiceEnabled; }
+          get { return _connection.VoiceEnabled; }
         }
 
         public float Volume
         {
-          get { return _character.Connection.VoiceVolume; }
+          get { return _connection.VoiceVolume; }
         }
 
         public bool Playing

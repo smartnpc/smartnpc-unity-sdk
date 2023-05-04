@@ -6,7 +6,8 @@ namespace SmartNPC
     public class MessageData : EmitData
     {
         public string character;
-        public string message;
+        public string text;
+        public string speech;
         public bool voice;
     }
 }

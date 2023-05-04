@@ -1,40 +1,38 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace SmartNPC
 {
     public class BaseEmitter : MonoBehaviour, IDisposable
     {
         private bool ready = false;
-        private event EventHandler OnReadyListeners;
+
+        private readonly UnityEvent OnReadyEvent = new UnityEvent();
         
         private List<Action> invokeOnUpdateActions = new List<Action>();
 
         protected virtual void Update()
         {
-            if (invokeOnUpdateActions.Count > 0)
-            {
-                try
-                {
-                    invokeOnUpdateActions.ForEach(action => action());
-                }
-                catch (Exception)
-                {
-                    // InvalidOperationException: Collection was modified; enumeration operation may not execute.
-                }
+            // cloning invokeOnUpdateActions, in case the invoked actions add more items to it
+            List<Action> actionsToInvoke = new List<Action>(invokeOnUpdateActions);
 
-                invokeOnUpdateActions.Clear();
+            invokeOnUpdateActions.Clear();
+
+            if (actionsToInvoke.Count > 0)
+            {
+                actionsToInvoke.ForEach(action => action());
+
+                actionsToInvoke.Clear();
             }
         }
 
         protected void SetReady()
         {
             ready = true;
-            
-            InvokeOnUpdate(() => {
-                OnReadyListeners?.Invoke(this, EventArgs.Empty);
-            });
+
+            OnReadyEvent.Invoke();
         }
 
         public void OnReady(Action callback)
@@ -42,15 +40,15 @@ namespace SmartNPC
             if (ready) callback();
             else
             {
-                EventHandler listener = null;
+                UnityAction listener = null;
 
-                listener = (sender, e) => {
+                listener = () => {
                     callback();
 
-                    OnReadyListeners -= listener;
+                    OnReadyEvent.RemoveListener(listener);
                 };
 
-                OnReadyListeners += listener;
+                OnReadyEvent.AddListener(listener);
             }
         }
 
@@ -64,6 +62,7 @@ namespace SmartNPC
         public virtual void Dispose()
         {
             invokeOnUpdateActions.Clear();
+            OnReadyEvent.RemoveAllListeners();
         }
         
         public bool IsReady
