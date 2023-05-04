@@ -32,7 +32,7 @@ namespace SmartNPC
         {
             ready = true;
 
-            OnReadyEvent.Invoke();
+            InvokeOnUpdate(() => OnReadyEvent.Invoke());
         }
 
         public void OnReady(Action callback)

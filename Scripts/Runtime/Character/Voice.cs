@@ -115,27 +115,9 @@ namespace SmartNPC
 
         private async Task<AudioSource> CreateVoice(string base64)
         {
-            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
+            AudioSource audioSource = await CreateVoice(gameObject, base64, AudioType.MPEG);
 
-            byte[] audioBytes = Convert.FromBase64String(base64);
-            string tempPath = Application.persistentDataPath + System.Guid.NewGuid().ToString();
-
-            File.WriteAllBytes(tempPath, audioBytes);
-
-            UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(tempPath, AudioType.MPEG);
-
-            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
-
-            while (!operation.isDone) await Task.Yield();
-
-            if (request.result.Equals(UnityWebRequest.Result.ConnectionError)) Debug.LogError(request.error);
-            else
-            {
-                audioSource.clip = DownloadHandlerAudioClip.GetContent(request);
-                audioSource.volume = Volume;
-            }
-
-            File.Delete(tempPath);
+            audioSource.volume = Volume;
 
             return audioSource;
         }
@@ -158,6 +140,29 @@ namespace SmartNPC
         public bool FinishedPlaying
         {
           get { return _complete; }
+        }
+
+        static public async Task<AudioSource> CreateVoice(GameObject gameObject, string base64, AudioType audioType)
+        {
+            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
+
+            byte[] audioBytes = Convert.FromBase64String(base64);
+            string tempPath = Application.persistentDataPath + System.Guid.NewGuid().ToString();
+
+            File.WriteAllBytes(tempPath, audioBytes);
+
+            UnityWebRequest request = UnityWebRequestMultimedia.GetAudioClip(tempPath, audioType);
+
+            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+
+            while (!operation.isDone) await Task.Yield();
+
+            if (request.result.Equals(UnityWebRequest.Result.ConnectionError)) Debug.LogError(request.error);
+            else audioSource.clip = DownloadHandlerAudioClip.GetContent(request);
+
+            File.Delete(tempPath);
+
+            return audioSource;
         }
     }
 }
