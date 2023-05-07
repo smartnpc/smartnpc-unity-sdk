@@ -13,11 +13,11 @@ namespace SmartNPC
         private SmartNPCCharacterInfo _info;
         private List<SmartNPCMessage> _messages;
 
-        public readonly UnityEvent OnMessageStart = new UnityEvent();
+        public readonly UnityEvent<SmartNPCMessage> OnMessageStart = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageProgress = new UnityEvent<SmartNPCMessage>();
-        public readonly UnityEvent OnMessageTextComplete = new UnityEvent();
-        public readonly UnityEvent OnMessageVoiceComplete = new UnityEvent();
-        public readonly UnityEvent OnMessageComplete = new UnityEvent();
+        public readonly UnityEvent<SmartNPCMessage> OnMessageTextComplete = new UnityEvent<SmartNPCMessage>();
+        public readonly UnityEvent<SmartNPCMessage> OnMessageVoiceComplete = new UnityEvent<SmartNPCMessage>();
+        public readonly UnityEvent<SmartNPCMessage> OnMessageComplete = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageException = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<List<SmartNPCMessage>> OnMessageHistoryChange = new UnityEvent<List<SmartNPCMessage>>();
 
@@ -100,20 +100,24 @@ namespace SmartNPC
             {
                 _voice.Reset();
 
-                UnityAction onVoiceComplete = null;
+                UnityAction<MessageResponse> onVoiceComplete = null;
                 
-                onVoiceComplete = () => {
-                    OnMessageVoiceComplete.Invoke();
-                    OnMessageComplete.Invoke();
+                onVoiceComplete = (MessageResponse response) => {
+                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };
+
+                    OnMessageVoiceComplete.Invoke(value);
+                    OnMessageComplete.Invoke(value);
 
                     _voice.OnVoiceProgress.RemoveListener(emitProgress);
                     _voice.OnVoiceComplete.RemoveListener(onVoiceComplete);
                 };
 
-                UnityAction onPlayLastChunk = null;
+                UnityAction<MessageResponse> onPlayLastChunk = null;
 
-                onPlayLastChunk = () => {
-                    OnMessageTextComplete.Invoke();
+                onPlayLastChunk = (MessageResponse response) => {
+                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = text, chunk = response.text };
+
+                    OnMessageTextComplete.Invoke(value);
 
                     _voice.OnPlayLastChunk.RemoveListener(onPlayLastChunk);
                 };
@@ -127,7 +131,7 @@ namespace SmartNPC
 
             _messages.Add(newMessage);
 
-            OnMessageStart.Invoke();
+            OnMessageStart.Invoke(newMessage);
             OnMessageProgress.Invoke(newMessage);
             OnMessageHistoryChange.Invoke(_messages);
 
@@ -135,7 +139,7 @@ namespace SmartNPC
                 EventName = "message",
                 Data = new MessageData {
                     character = _characterId,
-                    text = message,
+                    message = message,
                     voice = _voice.Enabled
                 },
                 OnProgress = (MessageResponse response) => {
@@ -152,8 +156,8 @@ namespace SmartNPC
                     if (_voice.Enabled) _voice.SetStreamComplete();
                     else
                     {
-                        OnMessageTextComplete.Invoke();
-                        OnMessageComplete.Invoke();
+                        OnMessageTextComplete.Invoke(value);
+                        OnMessageComplete.Invoke(value);
                     }
                 },
                 OnException = (string exception) => {

@@ -64,7 +64,7 @@ namespace SmartNPC
             invokeOnUpdateActions.Clear();
             OnReadyEvent.RemoveAllListeners();
         }
-        
+
         public bool IsReady
         {
             get { return ready; }

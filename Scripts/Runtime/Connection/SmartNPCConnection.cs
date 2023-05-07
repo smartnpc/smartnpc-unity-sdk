@@ -30,7 +30,7 @@ namespace SmartNPC
 
         private const string DEFAULT_HOST = "wss://api.smartnpc.ai";
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
-        private SocketIOUnity socket;
+        private SocketIOUnity _socket;
 
         void Awake()
         {
@@ -41,7 +41,7 @@ namespace SmartNPC
 
             var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
 
-            socket = new SocketIOUnity(uri, new SocketIOOptions {
+            _socket = new SocketIOUnity(uri, new SocketIOOptions {
                 Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
                 Auth = new {
                     keyId = _keyId,
@@ -49,24 +49,23 @@ namespace SmartNPC
                 }
             });
 
-            socket.JsonSerializer = new NewtonsoftJsonSerializer();
+            _socket.JsonSerializer = new NewtonsoftJsonSerializer();
 
-            socket.On(SocketEvent.Auth, (value) => {
+            _socket.On(SocketEvent.Auth, (value) => {
                 if (_playerId != "") SetPlayer(_playerId, _playerName);
             });
 
-            socket.On(SocketEvent.Ready, (value) => {
+            _socket.On(SocketEvent.Ready, (value) => {
                 SetReady();
             });
 
-            socket.OnDisconnected += (sender, value) => {
+            _socket.OnDisconnected += (sender, value) => {
                 if (value.Equals("io server disconnect")) Debug.LogError("Connection failed");
             };
 
-            socket.Connect();
+            _socket.Connect();
         }
         
-
         public void SetPlayer(string id, string name = "") {
             _playerId = id;
             _playerName = name;
@@ -78,6 +77,10 @@ namespace SmartNPC
                 name = name,
                },
             });
+        }
+
+        public void Emit(string eventName, params object[] data) {
+            _socket.Emit(eventName, data);
         }
 
         public void Fetch<T>(FetchOptions<T> options) {
@@ -99,7 +102,7 @@ namespace SmartNPC
                 On(SocketEvent.Exception, OnException);
             }
 
-            socket.Emit(options.EventName, (response) => {
+            _socket.Emit(options.EventName, (response) => {
                 if (OnException != null) Off(SocketEvent.Exception, OnException);
 
                 if (options.OnSuccess != null) options.OnSuccess(response.GetValue<T>());
@@ -149,17 +152,17 @@ namespace SmartNPC
 
             On(options.EventName, listener);
             
-            socket.Emit(options.EventName, options.Data);
+            _socket.Emit(options.EventName, options.Data);
         }
 
         // 3rd party can only hold one listener per event
         // On and Off allow having multiple listeners per event
 
-        private void On(string eventName, Action<SocketIOResponse> handler) {
+        public void On(string eventName, Action<SocketIOResponse> handler) {
             if (!socketListeners.ContainsKey(eventName)) {
                 socketListeners.Add(eventName, new List<Action<SocketIOResponse>>());
 
-                socket.On(eventName, (response) => {
+                _socket.On(eventName, (response) => {
                     socketListeners[eventName].ForEach((value) => value(response));
                 });
             }
@@ -167,7 +170,7 @@ namespace SmartNPC
             socketListeners[eventName].Add(handler);
         }
 
-        private void Off(string eventName, Action<SocketIOResponse> handler) {
+        public void Off(string eventName, Action<SocketIOResponse> handler) {
             if (socketListeners.ContainsKey(eventName)) socketListeners[eventName].Remove(handler);
         }
 
@@ -175,12 +178,12 @@ namespace SmartNPC
         {
             base.Dispose();
             
-            socket.Off(SocketEvent.Auth);
-            socket.Off(SocketEvent.Ready);
+            _socket.Off(SocketEvent.Auth);
+            _socket.Off(SocketEvent.Ready);
 
             List<string> socketListenersKeys = new List<string>(socketListeners.Keys);
             
-            socketListenersKeys.ForEach((eventName) => socket.Off(eventName));
+            socketListenersKeys.ForEach((eventName) => _socket.Off(eventName));
 
             socketListenersKeys.Clear();
             socketListeners.Clear();
