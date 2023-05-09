@@ -37,7 +37,7 @@ namespace SmartNPC
             Action onComplete = () => {
                 if (_info != null && _messages != null)
                 {
-                    OnMessageHistoryChange.Invoke(_messages);
+                    InvokeOnUpdate(() => OnMessageHistoryChange.Invoke(_messages));
 
                     if (!IsReady) SetReady();
                 }
@@ -92,8 +92,10 @@ namespace SmartNPC
 
                 _messages[_messages.Count - 1] = value;
 
-                OnMessageProgress.Invoke(value);
-                OnMessageHistoryChange.Invoke(_messages);
+                InvokeOnUpdate(() => {
+                    OnMessageProgress.Invoke(value);
+                    OnMessageHistoryChange.Invoke(_messages);
+                });
             };
             
             if (_voice.Enabled)
@@ -105,8 +107,10 @@ namespace SmartNPC
                 onVoiceComplete = (MessageResponse response) => {
                     SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };
 
-                    OnMessageVoiceComplete.Invoke(value);
-                    OnMessageComplete.Invoke(value);
+                    InvokeOnUpdate(() => {
+                        OnMessageVoiceComplete.Invoke(value);
+                        OnMessageComplete.Invoke(value);
+                    });
 
                     _voice.OnVoiceProgress.RemoveListener(emitProgress);
                     _voice.OnVoiceComplete.RemoveListener(onVoiceComplete);
@@ -117,7 +121,7 @@ namespace SmartNPC
                 onPlayLastChunk = (MessageResponse response) => {
                     SmartNPCMessage value = new SmartNPCMessage { message = message, response = text, chunk = response.text };
 
-                    OnMessageTextComplete.Invoke(value);
+                    InvokeOnUpdate(() => OnMessageTextComplete.Invoke(value));
 
                     _voice.OnPlayLastChunk.RemoveListener(onPlayLastChunk);
                 };
@@ -131,9 +135,11 @@ namespace SmartNPC
 
             _messages.Add(newMessage);
 
-            OnMessageStart.Invoke(newMessage);
-            OnMessageProgress.Invoke(newMessage);
-            OnMessageHistoryChange.Invoke(_messages);
+            InvokeOnUpdate(() => {
+                OnMessageStart.Invoke(newMessage);
+                OnMessageProgress.Invoke(newMessage);
+                OnMessageHistoryChange.Invoke(_messages);
+            });
 
             _connection.Stream(new StreamOptions<MessageResponse> {
                 EventName = "message",
@@ -151,13 +157,15 @@ namespace SmartNPC
 
                     _messages[_messages.Count - 1] = value;
 
-                    OnMessageHistoryChange.Invoke(_messages);
+                    InvokeOnUpdate(() => OnMessageHistoryChange.Invoke(_messages));
 
                     if (_voice.Enabled) _voice.SetStreamComplete();
                     else
                     {
-                        OnMessageTextComplete.Invoke(value);
-                        OnMessageComplete.Invoke(value);
+                        InvokeOnUpdate(() => {
+                            OnMessageTextComplete.Invoke(value);
+                            OnMessageComplete.Invoke(value);
+                        });
                     }
                 },
                 OnException = (string exception) => {
@@ -165,8 +173,10 @@ namespace SmartNPC
 
                     _messages[_messages.Count - 1] = value;
 
-                    OnMessageException.Invoke(value);
-                    OnMessageHistoryChange.Invoke(_messages);
+                    InvokeOnUpdate(() => {
+                        OnMessageException.Invoke(value);
+                        OnMessageHistoryChange.Invoke(_messages);
+                    });
                 }
             });
         }

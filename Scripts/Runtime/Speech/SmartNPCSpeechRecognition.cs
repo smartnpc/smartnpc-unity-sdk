@@ -107,24 +107,24 @@ namespace SmartNPC
         private void OnSpeechEvent(SocketIOResponse response) {
             SpeechResponse result = response.GetValue<SpeechResponse>();
 
-            if (result.status.Equals(StreamStatus.Start)) OnStart.Invoke();
+            if (result.status.Equals(StreamStatus.Start)) InvokeOnUpdate(() => OnStart.Invoke());
             else if (result.status == StreamStatus.Progress)
             {
                 processing = true;
 
-                OnProgress.Invoke(result.text);
+                InvokeOnUpdate(() => OnProgress.Invoke(result.text));
             }
             else if (result.status.Equals(StreamStatus.Complete))
             {
                 processing = false;
 
-                OnComplete.Invoke(result.text);
+                InvokeOnUpdate(() => OnComplete.Invoke(result.text));
             }
             else if (result.status.Equals(StreamStatus.Exception))
             {
                 processing = false;
 
-                OnException.Invoke(result.exception);
+                InvokeOnUpdate(() => OnException.Invoke(result.exception));
             }
         }
 
