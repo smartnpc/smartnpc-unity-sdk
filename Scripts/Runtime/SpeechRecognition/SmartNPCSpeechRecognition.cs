@@ -27,7 +27,7 @@ namespace SmartNPC
         public readonly UnityEvent<string> OnComplete = new UnityEvent<string>();
         public readonly UnityEvent<string> OnException = new UnityEvent<string>();
 
-        private SpeechTester tester;
+        private SpeechRecognitionTester tester;
 
         public void StartRecording()
         {
@@ -105,7 +105,7 @@ namespace SmartNPC
         }
 
         private void OnSpeechEvent(SocketIOResponse response) {
-            SpeechResponse result = response.GetValue<SpeechResponse>();
+            SpeechRecognitionResponse result = response.GetValue<SpeechRecognitionResponse>();
 
             if (result.status.Equals(StreamStatus.Start)) InvokeOnUpdate(() => OnStart.Invoke());
             else if (result.status == StreamStatus.Progress)
@@ -211,7 +211,7 @@ namespace SmartNPC
 
         private void ProcessChunk(float[] buffer)
         {
-            _connection.Emit("speech", new SpeechData { data = BufferToBase64(buffer) });
+            _connection.Emit("speech", new SpeechRecognitionData { data = BufferToBase64(buffer) });
         }
 
         public bool IsRecording

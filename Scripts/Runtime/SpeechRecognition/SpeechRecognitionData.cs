@@ -1,6 +1,6 @@
 namespace SmartNPC
 {
-    public class SpeechData : EmitData
+    public class SpeechRecognitionData : EmitData
     {
         public string data;
     }
