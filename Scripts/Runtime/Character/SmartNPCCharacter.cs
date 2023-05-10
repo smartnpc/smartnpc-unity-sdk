@@ -163,7 +163,6 @@ namespace SmartNPC
 
             InvokeOnUpdate(() => {
                 OnMessageStart.Invoke(newMessage);
-                OnMessageProgress.Invoke(newMessage);
                 OnMessageHistoryChange.Invoke(_messages);
             });
 
