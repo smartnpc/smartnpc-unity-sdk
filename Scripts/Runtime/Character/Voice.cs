@@ -18,10 +18,10 @@ namespace SmartNPC
         private bool _streamComplete = false;
         private bool _complete = false;
 
-       public readonly UnityEvent<MessageResponse> OnVoiceStart = new UnityEvent<MessageResponse>();
-       public readonly UnityEvent<MessageResponse> OnVoiceProgress = new UnityEvent<MessageResponse>();
-       public readonly UnityEvent<MessageResponse> OnVoiceComplete = new UnityEvent<MessageResponse>();
-       public readonly UnityEvent<MessageResponse> OnPlayLastChunk = new UnityEvent<MessageResponse>();
+       public readonly UnityEvent<VoiceMessage> OnVoiceStart = new UnityEvent<VoiceMessage>();
+       public readonly UnityEvent<VoiceMessage> OnVoiceProgress = new UnityEvent<VoiceMessage>();
+       public readonly UnityEvent<VoiceMessage> OnVoiceComplete = new UnityEvent<VoiceMessage>();
+       public readonly UnityEvent<VoiceMessage> OnPlayLastChunk = new UnityEvent<VoiceMessage>();
 
         void Awake()
         {
@@ -80,11 +80,11 @@ namespace SmartNPC
 
             _playing = true;
 
-            if (index == 0) OnVoiceStart.Invoke(queue[index].rawResponse);
+            if (index == 0) OnVoiceStart.Invoke(item);
 
-            OnVoiceProgress.Invoke(item.rawResponse);
+            OnVoiceProgress.Invoke(item);
 
-            if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk.Invoke(queue[index].rawResponse);
+            if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk.Invoke(item);
 
             current = item.voice;
 
@@ -102,7 +102,7 @@ namespace SmartNPC
 
                 _complete = true;
 
-                OnVoiceComplete.Invoke(queue[index].rawResponse);
+                OnVoiceComplete.Invoke(queue[index]);
             }
         }
 

@@ -3,7 +3,7 @@ using System;
 namespace SmartNPC
 {
     [Serializable]
-    public class SpeechResponse
+    public class SpeechRecognitionResponse
     {
         // no emitId on purpose
         public string status;

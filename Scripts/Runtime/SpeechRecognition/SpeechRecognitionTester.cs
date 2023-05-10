@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace SmartNPC
 {
-    public class SpeechTester : MonoBehaviour
+    public class SpeechRecognitionTester : MonoBehaviour
     {
         // methods that help with development, shouldn't be used in production
 
