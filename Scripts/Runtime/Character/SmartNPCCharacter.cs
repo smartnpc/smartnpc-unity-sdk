@@ -85,11 +85,7 @@ namespace SmartNPC
 
             string text = "";
 
-            UnityAction<MessageResponse> emitProgress = (MessageResponse response) => {
-                text += response.text;
-                
-                SmartNPCMessage value = new SmartNPCMessage { message = message, response = text, chunk = response.text };
-
+            UnityAction<SmartNPCMessage> emitProgress = (SmartNPCMessage value) => {
                 _messages[_messages.Count - 1] = value;
 
                 InvokeOnUpdate(() => {
@@ -97,14 +93,39 @@ namespace SmartNPC
                     OnMessageHistoryChange.Invoke(_messages);
                 });
             };
+
+            UnityAction<MessageResponse> emitTextProgress = (MessageResponse response) => {
+                text += response.text;
+
+                SmartNPCMessage value = new SmartNPCMessage {
+                    message = message,
+                    response = text,
+                    chunk = response.text
+                };
+
+                emitProgress(value);
+            };
+
+            UnityAction<VoiceMessage> emitVoiceProgress = (VoiceMessage response) => {
+                text += response.rawResponse.text;
+
+                SmartNPCMessage value = new SmartNPCMessage {
+                    message = message,
+                    response = text,
+                    chunk = response.rawResponse.text,
+                    voice = response.voice
+                };
+
+                emitProgress(value);
+            };
             
             if (_voice.Enabled)
             {
                 _voice.Reset();
 
-                UnityAction<MessageResponse> onVoiceComplete = null;
+                UnityAction<VoiceMessage> onVoiceComplete = null;
                 
-                onVoiceComplete = (MessageResponse response) => {
+                onVoiceComplete = (VoiceMessage response) => {
                     SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };
 
                     InvokeOnUpdate(() => {
@@ -112,21 +133,26 @@ namespace SmartNPC
                         OnMessageComplete.Invoke(value);
                     });
 
-                    _voice.OnVoiceProgress.RemoveListener(emitProgress);
+                    _voice.OnVoiceProgress.RemoveListener(emitVoiceProgress);
                     _voice.OnVoiceComplete.RemoveListener(onVoiceComplete);
                 };
 
-                UnityAction<MessageResponse> onPlayLastChunk = null;
+                UnityAction<VoiceMessage> onPlayLastChunk = null;
 
-                onPlayLastChunk = (MessageResponse response) => {
-                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = text, chunk = response.text };
+                onPlayLastChunk = (VoiceMessage response) => {
+                    SmartNPCMessage value = new SmartNPCMessage {
+                        message = message,
+                        response = text,
+                        chunk = response.rawResponse.text,
+                        voice = response.voice
+                    };
 
                     InvokeOnUpdate(() => OnMessageTextComplete.Invoke(value));
 
                     _voice.OnPlayLastChunk.RemoveListener(onPlayLastChunk);
                 };
 
-                _voice.OnVoiceProgress.AddListener(emitProgress);
+                _voice.OnVoiceProgress.AddListener(emitVoiceProgress);
                 _voice.OnVoiceComplete.AddListener(onVoiceComplete);
                 _voice.OnPlayLastChunk.AddListener(onPlayLastChunk);
             }
@@ -150,7 +176,7 @@ namespace SmartNPC
                 },
                 OnProgress = (MessageResponse response) => {
                     if (_voice.Enabled && response.voice != null) InvokeOnUpdate(() => _voice.Add(response));
-                    else emitProgress(response);
+                    else emitTextProgress(response);
                 },
                 OnComplete = (MessageResponse response) => {
                     SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };

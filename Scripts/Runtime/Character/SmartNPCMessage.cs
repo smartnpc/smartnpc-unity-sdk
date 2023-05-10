@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace SmartNPC
 {
@@ -9,5 +10,6 @@ namespace SmartNPC
         public string response;
         public string chunk;
         public string exception;
+        public AudioSource voice;
     }
 }
