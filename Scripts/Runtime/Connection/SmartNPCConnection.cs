@@ -31,7 +31,8 @@ namespace SmartNPC
         private const string DEFAULT_HOST = "wss://api.smartnpc.ai";
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
         private SocketIOUnity _socket;
-
+        private SmartNPCSpeechRecognition _speechRecognition;
+        
         void Awake()
         {
             if (_keyId == null|| _keyId == "" || _publicKey == null || _publicKey == "")
@@ -64,6 +65,8 @@ namespace SmartNPC
             };
 
             _socket.Connect();
+
+            _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
         }
         
         public void SetPlayer(string id, string name = "") {
@@ -207,6 +210,11 @@ namespace SmartNPC
         public float VoiceVolume
         {
             get { return _voiceVolume; }
+        }
+
+        public SmartNPCSpeechRecognition SpeechRecognition
+        {
+            get { return _speechRecognition; }
         }
     }
 }
