@@ -6,7 +6,7 @@ namespace SmartNPC
     [Serializable]
     public class VoiceMessage
     {
-        public AudioSource voice;
+        public AudioClip clip;
         public MessageResponse rawResponse;
     }
 }

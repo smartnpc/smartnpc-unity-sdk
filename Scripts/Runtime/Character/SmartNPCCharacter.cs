@@ -113,7 +113,7 @@ namespace SmartNPC
                     message = message,
                     response = text,
                     chunk = response.rawResponse.text,
-                    voice = response.voice
+                    voiceClip = response.clip
                 };
 
                 emitProgress(value);
@@ -144,7 +144,7 @@ namespace SmartNPC
                         message = message,
                         response = text,
                         chunk = response.rawResponse.text,
-                        voice = response.voice
+                        voiceClip = response.clip
                     };
 
                     InvokeOnUpdate(() => OnMessageTextComplete.Invoke(value));

@@ -62,10 +62,12 @@ namespace SmartNPC
             _complete = false;
         }
 
-        public void Add(MessageResponse response)
+        public async Task Add(MessageResponse response)
         {
+            AudioClip clip = await CreateVoice(response.voice, AudioType.MPEG);
+
             queue.Add(new VoiceMessage {
-                // voice = _audioSource,
+                clip = clip,
                 rawResponse = response
             });
 
@@ -86,7 +88,11 @@ namespace SmartNPC
 
             if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk.Invoke(item);
 
-            PlayVoice(item.rawResponse.voice);
+            _audioSource.clip = item.clip;
+
+            _audioSource.volume = Volume;
+
+            _audioSource.Play();
         }
 
         private void OnFinishPlayChunk()
@@ -109,15 +115,6 @@ namespace SmartNPC
             _streamComplete = true;
 
             if (index < queue.Count - 1) PlayNext();
-        }
-
-        private async Task PlayVoice(string base64)
-        {
-            _audioSource.clip = await CreateVoice(base64, AudioType.MPEG);
-
-            _audioSource.volume = Volume;
-
-            _audioSource.Play();
         }
 
         public bool Enabled
