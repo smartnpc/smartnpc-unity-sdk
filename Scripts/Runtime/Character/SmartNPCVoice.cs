@@ -8,33 +8,33 @@ using UnityEngine.Events;
 
 namespace SmartNPC
 {
-    public class Voice : MonoBehaviour
+    public class SmartNPCVoice : MonoBehaviour
     {
         private List<VoiceMessage> queue = new List<VoiceMessage>();
         private SmartNPCConnection _connection;
         private int index = -1;
-        private AudioSource current = null;
         private bool _playing = false;
         private bool _streamComplete = false;
         private bool _complete = false;
+        private AudioSource _audioSource = null;
 
-       public readonly UnityEvent<VoiceMessage> OnVoiceStart = new UnityEvent<VoiceMessage>();
-       public readonly UnityEvent<VoiceMessage> OnVoiceProgress = new UnityEvent<VoiceMessage>();
-       public readonly UnityEvent<VoiceMessage> OnVoiceComplete = new UnityEvent<VoiceMessage>();
-       public readonly UnityEvent<VoiceMessage> OnPlayLastChunk = new UnityEvent<VoiceMessage>();
+        public readonly UnityEvent<VoiceMessage> OnVoiceStart = new UnityEvent<VoiceMessage>();
+        public readonly UnityEvent<VoiceMessage> OnVoiceProgress = new UnityEvent<VoiceMessage>();
+        public readonly UnityEvent<VoiceMessage> OnVoiceComplete = new UnityEvent<VoiceMessage>();
+        public readonly UnityEvent<VoiceMessage> OnPlayLastChunk = new UnityEvent<VoiceMessage>();
 
         void Awake()
         {
             _connection = FindObjectOfType<SmartNPCConnection>();
+
+            _audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         void Update()
         {
-            if (current != null && !current.isPlaying)
+            if (_audioSource != null && _audioSource.clip != null && !_audioSource.isPlaying)
             {
-                Destroy(current);
-
-                current = null;
+                _audioSource.clip = null;
 
                 OnFinishPlayChunk();
             }
@@ -46,12 +46,14 @@ namespace SmartNPC
             OnVoiceProgress.RemoveAllListeners();
             OnVoiceComplete.RemoveAllListeners();
             OnPlayLastChunk.RemoveAllListeners();
+
+            Destroy(_audioSource);
         }
 
         public void Reset()
         {
             index = -1;
-            current = null;
+            _audioSource.clip = null;
 
             queue.Clear();
             
@@ -60,12 +62,10 @@ namespace SmartNPC
             _complete = false;
         }
 
-        public async void Add(MessageResponse response)
+        public void Add(MessageResponse response)
         {
-            AudioSource voice = await CreateVoice(response.voice);
-
             queue.Add(new VoiceMessage {
-                voice = voice,
+                // voice = _audioSource,
                 rawResponse = response
             });
 
@@ -86,9 +86,7 @@ namespace SmartNPC
 
             if (_streamComplete && index == queue.Count - 1) OnPlayLastChunk.Invoke(item);
 
-            current = item.voice;
-
-            current.Play();
+            PlayVoice(item.rawResponse.voice);
         }
 
         private void OnFinishPlayChunk()
@@ -98,7 +96,7 @@ namespace SmartNPC
             if (index < queue.Count - 1) PlayNext();
             else if (_streamComplete)
             {
-                current = null;
+                _audioSource.clip = null;
 
                 _complete = true;
 
@@ -113,13 +111,13 @@ namespace SmartNPC
             if (index < queue.Count - 1) PlayNext();
         }
 
-        private async Task<AudioSource> CreateVoice(string base64)
+        private async Task PlayVoice(string base64)
         {
-            AudioSource audioSource = await CreateVoice(gameObject, base64, AudioType.MPEG);
+            _audioSource.clip = await CreateVoice(base64, AudioType.MPEG);
 
-            audioSource.volume = Volume;
+            _audioSource.volume = Volume;
 
-            return audioSource;
+            _audioSource.Play();
         }
 
         public bool Enabled
@@ -142,9 +140,14 @@ namespace SmartNPC
           get { return _complete; }
         }
 
-        static public async Task<AudioSource> CreateVoice(GameObject gameObject, string base64, AudioType audioType)
+        public AudioSource AudioSource
         {
-            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
+          get { return _audioSource; }
+        }
+
+        static public async Task<AudioClip> CreateVoice(string base64, AudioType audioType)
+        {
+            AudioClip clip = null;
 
             byte[] audioBytes = Convert.FromBase64String(base64);
             string tempPath = Application.persistentDataPath + System.Guid.NewGuid().ToString();
@@ -158,11 +161,11 @@ namespace SmartNPC
             while (!operation.isDone) await Task.Yield();
 
             if (request.result.Equals(UnityWebRequest.Result.ConnectionError)) Debug.LogError(request.error);
-            else audioSource.clip = DownloadHandlerAudioClip.GetContent(request);
+            else clip = DownloadHandlerAudioClip.GetContent(request);
 
             File.Delete(tempPath);
 
-            return audioSource;
+            return clip;
         }
     }
 }
