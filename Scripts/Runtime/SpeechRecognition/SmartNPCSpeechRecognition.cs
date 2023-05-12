@@ -10,7 +10,6 @@ namespace SmartNPC
     {
         private SmartNPCConnection _connection;
         private bool recording = false;
-        private int minDecibels = -20;
         private int frequency = 16000;
         private int microphoneBufferLengthSeconds = 60 * 10; // 10 minutes
         private float collectIntervalSeconds = 1f; // also chunk length in seconds
@@ -206,7 +205,7 @@ namespace SmartNPC
 
         private bool IsSilent(float[] buffer)
         {
-            return DecibelsFromBuffer(buffer) < minDecibels;
+            return DecibelsFromBuffer(buffer) < _connection.SpeechRecognitionMinimumDecibels;
         }
 
         private void ProcessChunk(float[] buffer)
