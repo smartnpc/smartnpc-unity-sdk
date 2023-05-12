@@ -9,10 +9,15 @@ namespace SmartNPC
     {
         // methods that help with development, shouldn't be used in production
 
+        private AudioSource audioSource;
+
+        void Awake()
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         public void PlayBuffer(int channels, int frequency, float[] buffer)
         {
-            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
-            
             AudioClip clip = AudioClip.Create("chunk_" + System.Guid.NewGuid().ToString(), buffer.Length, channels, frequency, false);
 
             clip.SetData(buffer, 0);
@@ -41,7 +46,7 @@ namespace SmartNPC
 
             base64List.ForEach(chunk => {
                 InvokeUtility.Invoke(this, async () => {
-                    AudioSource audioSource = await Voice.CreateVoice(gameObject, chunk, AudioType.WAV);
+                    audioSource.clip = await SmartNPCVoice.CreateVoice(chunk, AudioType.WAV);
 
                     audioSource.Play();
                 }, index++);
@@ -50,8 +55,6 @@ namespace SmartNPC
 
         public void PlayAudioClip(AudioClip clip)
         {
-            AudioSource audioSource = gameObject.AddComponent<AudioSource>();
-
             audioSource.clip = clip;
 
             audioSource.Play();

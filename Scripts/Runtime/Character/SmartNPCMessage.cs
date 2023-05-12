@@ -10,6 +10,6 @@ namespace SmartNPC
         public string response;
         public string chunk;
         public string exception;
-        public AudioSource voice;
+        public AudioClip voiceClip;
     }
 }

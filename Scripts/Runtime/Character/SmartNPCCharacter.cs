@@ -9,7 +9,7 @@ namespace SmartNPC
     {
         [SerializeField] private string _characterId;
         private SmartNPCConnection _connection;
-        private Voice _voice;
+        private SmartNPCVoice _voice;
         private SmartNPCCharacterInfo _info;
         private List<SmartNPCMessage> _messages;
 
@@ -25,7 +25,7 @@ namespace SmartNPC
         {
             if (_characterId == null || _characterId == "") throw new Exception("Must specify Id");
 
-            _voice = gameObject.AddComponent<Voice>();
+            _voice = gameObject.AddComponent<SmartNPCVoice>();
 
             _connection = FindObjectOfType<SmartNPCConnection>();
 
@@ -113,7 +113,7 @@ namespace SmartNPC
                     message = message,
                     response = text,
                     chunk = response.rawResponse.text,
-                    voice = response.voice
+                    voiceClip = response.clip
                 };
 
                 emitProgress(value);
@@ -144,7 +144,7 @@ namespace SmartNPC
                         message = message,
                         response = text,
                         chunk = response.rawResponse.text,
-                        voice = response.voice
+                        voiceClip = response.clip
                     };
 
                     InvokeOnUpdate(() => OnMessageTextComplete.Invoke(value));
@@ -219,6 +219,11 @@ namespace SmartNPC
         public SmartNPCConnection Connection
         {
             get { return _connection; }
+        }
+
+        public SmartNPCVoice Voice
+        {
+            get { return _voice; }
         }
         
         override public void Dispose()
