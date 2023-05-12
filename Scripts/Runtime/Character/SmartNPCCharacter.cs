@@ -79,7 +79,18 @@ namespace SmartNPC
             });
         }
 
-        public new void SendMessage(string message)
+        public void ClearMessageHistory()
+        {
+            _connection.Fetch<bool>(new FetchOptions<bool> {
+               EventName = "clearmessagehistory",
+               Data = new MessageHistoryData { character = _characterId },
+               OnException = (response) => {
+                throw new Exception("Couldn't clear message history");
+               }
+            });
+        }
+
+        public void SendMessage(string message)
         {
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
