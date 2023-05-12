@@ -27,7 +27,9 @@ namespace SmartNPC
         {
             _connection = FindObjectOfType<SmartNPCConnection>();
 
-            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource = gameObject.GetComponent<AudioSource>();
+
+            if (_audioSource == null) _audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         void Update()
