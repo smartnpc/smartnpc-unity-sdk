@@ -25,7 +25,7 @@ namespace SmartNPC
         [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
 
         [Header("Speech Recognition")]
-        [SerializeField] [Range(-60, 0)] private int _minimumDecibels = -30;
+        [SerializeField] [Range(-60, 0)] private int _minimumDecibels = -40;
 
         [Header("Advanced Settings")]
 

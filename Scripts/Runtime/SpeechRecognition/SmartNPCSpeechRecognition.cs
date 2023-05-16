@@ -217,5 +217,10 @@ namespace SmartNPC
         {
             get { return recording; }
         }
+
+        public SmartNPCConnection Connection
+        {
+            get { return _connection; }
+        }
     }
 }
