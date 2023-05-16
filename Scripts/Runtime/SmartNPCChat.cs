@@ -166,6 +166,11 @@ namespace SmartNPC
 
                 _connection.SpeechRecognition.OnReady(() => _connection.SpeechRecognition.StartRecording());
             }
+
+            if (_character.Messages != null)
+            {
+                MessageHistoryLogChange(GetMessageLog(_character, _character.Messages, _messageFormat, _errorFormat));
+            }
         }
 
         private void RemoveListeners()
