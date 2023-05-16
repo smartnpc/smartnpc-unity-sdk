@@ -190,7 +190,7 @@ namespace SmartNPC
                     voice = _voice.Enabled
                 },
                 OnProgress = (MessageResponse response) => {
-                    if (_voice.Enabled && response.voice != null) InvokeOnUpdate(() => _voice.Add(response));
+                    if (_voice.Enabled && response.voice != null) InvokeOnUpdate(async () => await _voice.Add(response));
                     else emitTextProgress(response);
                 },
                 OnComplete = (MessageResponse response) => {
