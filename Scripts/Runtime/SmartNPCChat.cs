@@ -141,7 +141,11 @@ namespace SmartNPC
 
         public new void SendMessage(string text)
         {
-            if (_character) _character.SendMessage(text);
+            if (_character) {
+                SubtitlesChange(_character.Connection.PlayerName, text, false);
+                
+                _character.SendMessage(text);
+            }
         }
 
         public void ClearMessageHistory()
@@ -171,6 +175,8 @@ namespace SmartNPC
             {
                 MessageHistoryLogChange(GetMessageLog(_character, _character.Messages, _messageFormat, _errorFormat));
             }
+
+            _character.OnReady(SetReady);
         }
 
         private void RemoveListeners()
@@ -192,6 +198,8 @@ namespace SmartNPC
 
                 _connection.SpeechRecognition.StopRecording();
             }
+
+            ResetReady();
         }
 
         public SmartNPCConnection Connection

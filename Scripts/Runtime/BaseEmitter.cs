@@ -35,6 +35,13 @@ namespace SmartNPC
             InvokeOnUpdate(() => OnReadyEvent.Invoke());
         }
 
+        protected void ResetReady()
+        {
+            ready = false;
+
+            OnReadyEvent.RemoveAllListeners();
+        }
+
         public void OnReady(Action callback)
         {
             if (ready) callback();
