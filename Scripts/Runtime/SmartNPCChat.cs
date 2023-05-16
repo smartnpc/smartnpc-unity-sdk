@@ -17,7 +17,7 @@ namespace SmartNPC
 
         [Header("Subtitles")]
         [SerializeField] private TextMeshProUGUI _subtitlesTextField;
-        [SerializeField] private string _subtitlesFormat = "<mark=#000000aa padding=\"10,10,10,10\">%name%: %message%</mark>";
+        [SerializeField] private string _subtitlesFormat = "<mark=#000000aa padding=\"20,20,2,2\">%name%: %message%</mark>";
         
         [SerializeField] private Color _defaultColor = Color.white;
         [SerializeField] private Color _rawSpeechColor = Color.yellow;
@@ -29,7 +29,7 @@ namespace SmartNPC
         [SerializeField] private string _messageFormat = DefaultMessageFormat;
         [SerializeField] private string _errorFormat = DefaultErrorFormat;
 
-        private SmartNPCSpeechRecognition _speechRecognitionInstance;
+        private SmartNPCConnection _connection;
 
         private bool _hasRecordingText = false;
 
@@ -44,10 +44,15 @@ namespace SmartNPC
         public readonly UnityEvent<string, bool> OnSubtitlesChange = new UnityEvent<string, bool>(); // text, raw
         public readonly UnityEvent<string> OnMessageHistoryLogChange = new UnityEvent<string>();
 
-        void Start()
+        void Awake()
         {
-            _speechRecognitionInstance = FindObjectOfType<SmartNPCSpeechRecognition>();
+            _connection = FindObjectOfType<SmartNPCConnection>();
 
+            _connection.OnReady(Init);
+        }
+
+        private void Init()
+        {
             if (_character) AddListeners();
         }
 
@@ -75,7 +80,7 @@ namespace SmartNPC
         {
             OnMessageStart.Invoke(message);
 
-            _speechRecognitionInstance.StopRecording();
+            _connection.SpeechRecognition.StopRecording();
         }
 
         private void MessageProgress(SmartNPCMessage message)
@@ -101,7 +106,7 @@ namespace SmartNPC
         {
             OnMessageComplete.Invoke(message);
 
-            _speechRecognitionInstance.StartRecording();
+            _connection.SpeechRecognition.StartRecording();
 
             InvokeUtility.Invoke(this, (Action)(() => {
                 if (!_hasRecordingText) SubtitlesChange(_character.Info.name, "", false);
@@ -156,10 +161,10 @@ namespace SmartNPC
 
             if (_speechRecognition)
             {
-                _speechRecognitionInstance.OnProgress.AddListener(SpeechRecognitionProgress);
-                _speechRecognitionInstance.OnComplete.AddListener(SpeechRecognitionComplete);
+                _connection.SpeechRecognition.OnProgress.AddListener(SpeechRecognitionProgress);
+                _connection.SpeechRecognition.OnComplete.AddListener(SpeechRecognitionComplete);
 
-                _speechRecognitionInstance.OnReady(() => _speechRecognitionInstance.StartRecording());
+                _connection.SpeechRecognition.OnReady(() => _connection.SpeechRecognition.StartRecording());
             }
         }
 
@@ -177,11 +182,16 @@ namespace SmartNPC
 
             if (_speechRecognition)
             {
-                _speechRecognitionInstance.OnProgress.RemoveListener(SpeechRecognitionProgress);
-                _speechRecognitionInstance.OnComplete.RemoveListener(SpeechRecognitionComplete);
+                _connection.SpeechRecognition.OnProgress.RemoveListener(SpeechRecognitionProgress);
+                _connection.SpeechRecognition.OnComplete.RemoveListener(SpeechRecognitionComplete);
 
-                _speechRecognitionInstance.StopRecording();
+                _connection.SpeechRecognition.StopRecording();
             }
+        }
+
+        public SmartNPCConnection Connection
+        {
+            get { return _connection; }
         }
 
         public SmartNPCCharacter Character
@@ -195,11 +205,6 @@ namespace SmartNPC
 
                 if (_character) AddListeners();
             }
-        }
-
-        public bool SpeechRecognition
-        {
-            get { return _speechRecognitionInstance; }
         }
         
         override public void Dispose()
