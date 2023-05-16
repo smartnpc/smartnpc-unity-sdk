@@ -123,7 +123,12 @@ namespace SmartNPC
 
         public new void SendMessage(string text)
         {
-            _character.SendMessage(text);
+            if (_character) _character.SendMessage(text);
+        }
+
+        public void ClearMessageHistory()
+        {
+            if (_character) _character.ClearMessageHistory();
         }
 
         private void AddListeners()
