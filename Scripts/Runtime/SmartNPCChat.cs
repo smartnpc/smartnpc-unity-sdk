@@ -41,7 +41,7 @@ namespace SmartNPC
         public readonly UnityEvent<SmartNPCMessage> OnMessageException = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<List<SmartNPCMessage>> OnMessageHistoryChange = new UnityEvent<List<SmartNPCMessage>>();
         
-        public readonly UnityEvent<string, bool> OnSubtitlesChange = new UnityEvent<string, bool>(); // text, raw
+        public readonly UnityEvent<string, bool> OnSubtitlesChange = new UnityEvent<string, bool>();
         public readonly UnityEvent<string> OnMessageHistoryLogChange = new UnityEvent<string>();
 
         void Awake()
@@ -56,17 +56,17 @@ namespace SmartNPC
             if (_character) AddListeners();
         }
 
-        private void SubtitlesChange(string name, string message, bool raw)
+        private void SubtitlesChange(string name, string message, bool rawSpeech)
         {
             string text = message != "" ? FormatMessage(name, message, _subtitlesFormat) : "";
 
             if (_subtitlesTextField)
             {
-                _subtitlesTextField.color = raw ? _rawSpeechColor : _defaultColor;
+                _subtitlesTextField.color = rawSpeech ? _rawSpeechColor : _defaultColor;
                 _subtitlesTextField.text = text;
             }
 
-            OnSubtitlesChange.Invoke(text, false);
+            OnSubtitlesChange.Invoke(text, rawSpeech);
         }
 
         private void MessageHistoryLogChange(string text)
@@ -143,7 +143,7 @@ namespace SmartNPC
         {
             if (_character) {
                 SubtitlesChange(_character.Connection.PlayerName, text, false);
-                
+
                 _character.SendMessage(text);
             }
         }
