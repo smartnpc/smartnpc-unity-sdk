@@ -12,7 +12,7 @@ namespace SmartNPC
         public const string DefaultErrorFormat = "(Error: %error%)";
 
         [SerializeField] private SmartNPCCharacter _character;
-        [SerializeField] private bool _speechRecognition = false;
+        [SerializeField] private bool _speechRecognition = true;
 
 
         [Header("Subtitles")]
@@ -163,13 +163,7 @@ namespace SmartNPC
             _character.OnMessageException.AddListener(MessageException);
             _character.OnMessageHistoryChange.AddListener(MessageHistoryChange);
 
-            if (_speechRecognition)
-            {
-                _connection.SpeechRecognition.OnProgress.AddListener(SpeechRecognitionProgress);
-                _connection.SpeechRecognition.OnComplete.AddListener(SpeechRecognitionComplete);
-
-                _connection.SpeechRecognition.OnReady(() => _connection.SpeechRecognition.StartRecording());
-            }
+            if (_speechRecognition) AddSpeechRecognitionListeners();
 
             if (_character.Messages != null)
             {
@@ -191,15 +185,25 @@ namespace SmartNPC
             _character.OnMessageException.RemoveListener(MessageException);
             _character.OnMessageHistoryChange.RemoveListener(MessageHistoryChange);
 
-            if (_speechRecognition)
-            {
-                _connection.SpeechRecognition.OnProgress.RemoveListener(SpeechRecognitionProgress);
-                _connection.SpeechRecognition.OnComplete.RemoveListener(SpeechRecognitionComplete);
-
-                _connection.SpeechRecognition.StopRecording();
-            }
+            if (_speechRecognition) RemoveSpeechRecognitionListeners();
 
             ResetReady();
+        }
+
+        private void AddSpeechRecognitionListeners()
+        {
+            _connection.SpeechRecognition.OnProgress.AddListener(SpeechRecognitionProgress);
+            _connection.SpeechRecognition.OnComplete.AddListener(SpeechRecognitionComplete);
+
+            _connection.SpeechRecognition.OnReady(() => _connection.SpeechRecognition.StartRecording());
+        }
+
+        private void RemoveSpeechRecognitionListeners()
+        {
+            _connection.SpeechRecognition.OnProgress.RemoveListener(SpeechRecognitionProgress);
+            _connection.SpeechRecognition.OnComplete.RemoveListener(SpeechRecognitionComplete);
+
+            _connection.SpeechRecognition.StopRecording();
         }
 
         public SmartNPCConnection Connection
@@ -217,6 +221,23 @@ namespace SmartNPC
                 _character = value;
 
                 if (_character) AddListeners();
+            }
+        }
+
+        public bool SpeechRecognition
+        {
+            get { return _speechRecognition; }
+            
+            set {
+                if (value == _speechRecognition) return;
+
+                _speechRecognition = value;
+
+                if (_character)
+                {
+                    if (_speechRecognition) AddSpeechRecognitionListeners();
+                    else RemoveSpeechRecognitionListeners();
+                }
             }
         }
         

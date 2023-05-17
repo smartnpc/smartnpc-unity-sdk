@@ -43,6 +43,8 @@ namespace SmartNPC
                 throw new Exception("Must specify Key Id and Public Key");
             }
 
+            _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
+
             var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
 
             _socket = new SocketIOUnity(uri, new SocketIOOptions {
@@ -68,8 +70,6 @@ namespace SmartNPC
             };
 
             _socket.Connect();
-
-            _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
         }
         
         public void SetPlayer(string id, string name = "") {
