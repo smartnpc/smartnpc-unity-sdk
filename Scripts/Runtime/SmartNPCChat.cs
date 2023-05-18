@@ -216,6 +216,8 @@ namespace SmartNPC
             get { return _character; }
             
             set {
+                if (value == _character) return;
+
                 if (_character) RemoveListeners();
                 
                 _character = value;
