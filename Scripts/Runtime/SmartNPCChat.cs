@@ -78,7 +78,7 @@ namespace SmartNPC
 
             if (_recordingTextField)
             {
-                if (!_speechRecognition || _character && _character.MessageInProgress) SetRecordingText(_holdToRecordColor, "");
+                if (!_speechRecognition || !_character || _character.MessageInProgress) SetRecordingText(_holdToRecordColor, "");
                 else if (_speechRecognition)
                 {
                     if (_connection.SpeechRecognition.IsRecording)
