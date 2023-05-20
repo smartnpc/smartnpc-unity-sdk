@@ -77,17 +77,21 @@ namespace SmartNPC
                 _connection.SpeechRecognition.StopRecording();
             }
 
-            if (_recordingTextField) {
-                if (_character && _character.MessageInProgress)SetRecordingText(_holdToRecordColor, "");
-                else if (_connection.SpeechRecognition.IsRecording)
+            if (_recordingTextField)
+            {
+                if (!_speechRecognition || _character && _character.MessageInProgress) SetRecordingText(_holdToRecordColor, "");
+                else if (_speechRecognition)
                 {
-                    if (_connection.SpeechRecognition.IsFinishingRecording) SetRecordingText(_recordingColor, "Finishing Recording...");
-                    else SetRecordingText(_recordingColor, "Recording");
-                }
-                else {
-                    String keyName = Regex.Replace(_holdToRecordKey.ToString(), "((?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z]))", " $1").Trim();
-                    
-                    SetRecordingText(_holdToRecordColor, "Hold [%key%] to Talk".Replace("%key%", keyName));
+                    if (_connection.SpeechRecognition.IsRecording)
+                    {
+                        if (_connection.SpeechRecognition.IsFinishingRecording) SetRecordingText(_recordingColor, "Finishing Recording...");
+                        else SetRecordingText(_recordingColor, "Recording");
+                    }
+                    else {
+                        String keyName = Regex.Replace(_holdToRecordKey.ToString(), "((?<!^)([A-Z][a-z]|(?<=[a-z])[A-Z]))", " $1").Trim();
+                        
+                        SetRecordingText(_holdToRecordColor, "Hold [%key%] to Talk".Replace("%key%", keyName));
+                    }
                 }
             }
         }
