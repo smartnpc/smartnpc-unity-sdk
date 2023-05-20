@@ -12,6 +12,8 @@ namespace SmartNPC
         private SmartNPCVoice _voice;
         private SmartNPCCharacterInfo _info;
         private List<SmartNPCMessage> _messages;
+        private bool _messageInProgress = false; // message sent until message complete
+        private bool _speaking = false; // message first progress until message complete
 
         public readonly UnityEvent<SmartNPCMessage> OnMessageStart = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageProgress = new UnityEvent<SmartNPCMessage>();
@@ -101,7 +103,11 @@ namespace SmartNPC
 
             string text = "";
 
+            _messageInProgress = true;
+
             UnityAction<SmartNPCMessage> emitProgress = (SmartNPCMessage value) => {
+                _speaking = true;
+
                 _messages[_messages.Count - 1] = value;
 
                 InvokeOnUpdate(() => {
@@ -147,6 +153,9 @@ namespace SmartNPC
                     InvokeOnUpdate(() => {
                         OnMessageVoiceComplete.Invoke(value);
                         OnMessageComplete.Invoke(value);
+
+                        _speaking = false;
+                        _messageInProgress = false;
                     });
 
                     _voice.OnVoiceProgress.RemoveListener(emitVoiceProgress);
@@ -204,6 +213,9 @@ namespace SmartNPC
                     else
                     {
                         InvokeOnUpdate(() => {
+                            _messageInProgress = false;
+                            _speaking = false;
+
                             OnMessageTextComplete.Invoke(value);
                             OnMessageComplete.Invoke(value);
                         });
@@ -215,6 +227,9 @@ namespace SmartNPC
                     _messages[_messages.Count - 1] = value;
 
                     InvokeOnUpdate(() => {
+                        _messageInProgress = false;
+                        _speaking = false;
+
                         OnMessageException.Invoke(value);
                         OnMessageHistoryChange.Invoke(_messages);
                     });
@@ -240,6 +255,16 @@ namespace SmartNPC
         public SmartNPCVoice Voice
         {
             get { return _voice; }
+        }
+
+        public bool Speaking
+        {
+            get { return _speaking; }
+        }
+
+        public bool MessageInProgress
+        {
+            get { return _messageInProgress; }
         }
         
         override public void Dispose()

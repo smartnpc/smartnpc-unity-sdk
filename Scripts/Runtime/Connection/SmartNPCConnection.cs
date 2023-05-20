@@ -14,22 +14,23 @@ namespace SmartNPC
 
         [SerializeField] private string _publicKey;
 
+
         [Header("Player")]
 
         [SerializeField] private string _playerId;
 
         [SerializeField] private string _playerName;
 
+
         [Header("Voice")]
         [SerializeField] private bool _voiceEnabled = true;
         [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
 
-        [Header("Speech Recognition")]
-        [SerializeField] [Range(-60, 0)] private int _minimumDecibels = -40;
 
         [Header("Advanced Settings")]
 
         [SerializeField] private string _host;
+
 
         private const string DEFAULT_HOST = "wss://api.smartnpc.ai";
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
@@ -213,11 +214,6 @@ namespace SmartNPC
         public float VoiceVolume
         {
             get { return _voiceVolume; }
-        }
-
-        public int SpeechRecognitionMinimumDecibels
-        {
-            get { return _minimumDecibels; }
         }
 
         public SmartNPCSpeechRecognition SpeechRecognition

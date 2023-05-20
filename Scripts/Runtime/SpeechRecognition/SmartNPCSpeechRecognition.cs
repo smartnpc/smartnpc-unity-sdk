@@ -10,6 +10,7 @@ namespace SmartNPC
     {
         private SmartNPCConnection _connection;
         private bool recording = false;
+        private bool recordingUntilFinishProcessing = false;
         private int frequency = 16000;
         private int microphoneBufferLengthSeconds = 60 * 10; // 10 minutes
         private float collectIntervalSeconds = 1f; // also chunk length in seconds
@@ -39,21 +40,25 @@ namespace SmartNPC
             lastPosition = Microphone.GetPosition(null);
 
             recording = true;
+            recordingUntilFinishProcessing = false;
 
             collectCounter = 0;
         }
 
         public void StopRecording()
         {
-            if (!recording) return;
+            if (!recording || recordingUntilFinishProcessing) return;
 
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
-            Microphone.End(null);
+            if (processing) recordingUntilFinishProcessing = true;
+            else
+            {
+                Microphone.End(null);
 
-            recordingClip = null;
-
-            recording = false;
+                recordingClip = null;
+                recording = false;
+            }
         }
 
         public void ToggleRecording()
@@ -103,27 +108,48 @@ namespace SmartNPC
             _connection.Off("speech", OnSpeechEvent);
         }
 
-        private void OnSpeechEvent(SocketIOResponse response) {
+        private void OnSpeechEvent(SocketIOResponse response)
+        {
             SpeechRecognitionResponse result = response.GetValue<SpeechRecognitionResponse>();
 
-            if (result.status.Equals(StreamStatus.Start)) InvokeOnUpdate(() => OnStart.Invoke());
-            else if (result.status == StreamStatus.Progress)
-            {
+            if (result.status.Equals(StreamStatus.Start)) {
                 processing = true;
 
+                InvokeOnUpdate(() => OnStart.Invoke());
+            }
+            else if (result.status == StreamStatus.Progress)
+            {
                 InvokeOnUpdate(() => OnProgress.Invoke(result.text));
             }
             else if (result.status.Equals(StreamStatus.Complete))
             {
                 processing = false;
 
-                InvokeOnUpdate(() => OnComplete.Invoke(result.text));
+                InvokeOnUpdate(() => {
+                    OnFinishProcessing();
+
+                    OnComplete.Invoke(result.text);
+                });
             }
             else if (result.status.Equals(StreamStatus.Exception))
             {
                 processing = false;
 
-                InvokeOnUpdate(() => OnException.Invoke(result.exception));
+                InvokeOnUpdate(() => {
+                    OnFinishProcessing();
+                    
+                    OnException.Invoke(result.exception);
+                });
+            }
+        }
+
+        private void OnFinishProcessing()
+        {
+            if (recordingUntilFinishProcessing)
+            {
+                recordingUntilFinishProcessing = false;
+
+                StopRecording();
             }
         }
 
@@ -135,7 +161,7 @@ namespace SmartNPC
 
             lastPosition = currentPosition;
 
-            if (processing || !IsSilent(chunkBuffer)) ProcessChunk(chunkBuffer);
+            ProcessChunk(chunkBuffer);
         }
 
         private byte[] BufferToBytes(float[] buffer)
@@ -189,33 +215,21 @@ namespace SmartNPC
             return Convert.ToBase64String(wavBytes);
         }
 
-        private float DecibelsFromBuffer(float[] buffer)
-        {
-            float max = 0;
-
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                float value = buffer[i] * buffer[i];
-
-                if (max < value) max = value;
-            }
-
-            return 20 * Mathf.Log10(Mathf.Abs(max));
-        }
-
-        private bool IsSilent(float[] buffer)
-        {
-            return DecibelsFromBuffer(buffer) < _connection.SpeechRecognitionMinimumDecibels;
-        }
-
         private void ProcessChunk(float[] buffer)
         {
+            processing = true;
+
             _connection.Emit("speech", new SpeechRecognitionData { data = BufferToBase64(buffer) });
         }
 
         public bool IsRecording
         {
             get { return recording; }
+        }
+
+        public bool IsFinishingRecording
+        {
+            get { return recordingUntilFinishProcessing; }
         }
 
         public SmartNPCConnection Connection
