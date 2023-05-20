@@ -15,6 +15,15 @@ namespace SmartNPC
         [SerializeField] private SmartNPCCharacter _character;
 
 
+        [Header("Speech Recognition")]
+        [SerializeField] private bool _speechRecognition = true;
+        [SerializeField] private TextMeshProUGUI _recordingTextField;
+        [SerializeField] private string _recordingFormat = "<mark=#000000aa padding=\"20,20,2,2\">%content%</mark>";
+        [SerializeField] private KeyCode _holdToRecordKey = KeyCode.LeftControl;
+        [SerializeField] private Color _holdToRecordColor = Color.white;
+        [SerializeField] private Color _recordingColor = Color.red;
+
+
         [Header("Subtitles")]
         [SerializeField] private TextMeshProUGUI _subtitlesTextField;
         [SerializeField] private string _subtitlesFormat = "<mark=#000000aa padding=\"20,20,2,2\">%name%: %message%</mark>";
@@ -26,16 +35,6 @@ namespace SmartNPC
         [SerializeField] private TextMeshProUGUI _logTextField;
         [SerializeField] private string _messageFormat = DefaultMessageFormat;
         [SerializeField] private string _errorFormat = DefaultErrorFormat;
-
-
-        [Header("Speech Recognition")]
-        [SerializeField] private bool _speechRecognition = true;
-        [SerializeField] private TextMeshProUGUI _recordingTextField;
-        [SerializeField] private string _recordingFormat = "<mark=#000000aa padding=\"20,20,2,2\">%content%</mark>";
-        [SerializeField] private KeyCode _holdToRecordKey = KeyCode.LeftControl;
-        [SerializeField] private Color _holdToRecordColor = Color.white;
-        [SerializeField] private Color _recordingColor = Color.red;
-
 
         private SmartNPCConnection _connection;
 
