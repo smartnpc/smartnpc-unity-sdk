@@ -19,7 +19,7 @@
     "url": "https://smartnpc.ai"
   },
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json" : "3.0.3",
+    "com.unity.nuget.newtonsoft-json" : "3.0.2",
     "com.unity.textmeshpro" : "3.0.6"
   }
 }
