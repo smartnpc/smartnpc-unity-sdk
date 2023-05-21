@@ -9,16 +9,12 @@ namespace SmartNPC
     public class SmartNPCConnection : BaseEmitter
     {
         [Header("Credentials")]
-
         [SerializeField] private string _keyId;
-
         [SerializeField] private string _publicKey;
 
 
         [Header("Player")]
-
         [SerializeField] private string _playerId;
-
         [SerializeField] private string _playerName;
 
 
@@ -28,7 +24,6 @@ namespace SmartNPC
 
 
         [Header("Advanced Settings")]
-
         [SerializeField] private string _host;
 
 
@@ -36,6 +31,7 @@ namespace SmartNPC
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
         private SocketIOUnity _socket;
         private SmartNPCSpeechRecognition _speechRecognition;
+        private OVRLipSync _lipSync;
         
         void Awake()
         {
@@ -84,6 +80,15 @@ namespace SmartNPC
                 name = name,
                },
             });
+        }
+
+        public void InitLipSync()
+        {
+            if (_lipSync) return;
+
+            _lipSync = gameObject.GetComponent<OVRLipSync>();
+            
+            if (_lipSync) _lipSync = gameObject.AddComponent<OVRLipSync>();
         }
 
         public void Emit(string eventName, params object[] data) {

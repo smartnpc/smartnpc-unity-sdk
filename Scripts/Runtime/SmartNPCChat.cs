@@ -36,6 +36,7 @@ namespace SmartNPC
         [SerializeField] private string _messageFormat = DefaultMessageFormat;
         [SerializeField] private string _errorFormat = DefaultErrorFormat;
 
+
         private SmartNPCConnection _connection;
 
         private bool _hasRecordingText = false;
