@@ -31,6 +31,24 @@ namespace SmartNPC
         public readonly UnityEvent<SmartNPCMessage> OnMessageException = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<List<SmartNPCMessage>> OnMessageHistoryChange = new UnityEvent<List<SmartNPCMessage>>();
 
+        private string[] readyPlayerMeVisemes = {
+            "viseme_sil",
+            "viseme_PP",
+            "viseme_FF",
+            "viseme_TH",
+            "viseme_DD",
+            "viseme_kk",
+            "viseme_CH",
+            "viseme_SS",
+            "viseme_nn",
+            "viseme_RR",
+            "viseme_aa",
+            "viseme_E",
+            "viseme_I",
+            "viseme_O",
+            "viseme_U"
+        };
+
         void Awake()
         {
             if (_characterId == null || _characterId == "") throw new Exception("Must specify Id");
@@ -41,20 +59,34 @@ namespace SmartNPC
 
             _connection.OnReady(Init);
 
-            if (_skinnedMeshRenderer)
+            if (_skinnedMeshRenderer) InitLipSync();
+        }
+
+        private void InitLipSync()
+        {
+            _connection.InitLipSync();
+
+            _lipSyncContext = gameObject.GetComponent<OVRLipSyncContext>();
+            if (!_lipSyncContext) _lipSyncContext = gameObject.AddComponent<OVRLipSyncContext>();
+
+            _lipSyncContextMorphTarget = gameObject.GetComponent<OVRLipSyncContextMorphTarget>();
+            if (!_lipSyncContextMorphTarget) _lipSyncContextMorphTarget = gameObject.AddComponent<OVRLipSyncContextMorphTarget>();
+
+            _lipSyncContext.audioLoopback = true;
+
+            _lipSyncContextMorphTarget.skinnedMeshRenderer = _skinnedMeshRenderer;
+            _lipSyncContextMorphTarget.visemeBlendRange = _visemeBlendRange;
+
+            SetReadyPlayerMeVisemeToBlendTargets();
+        }
+
+        private void SetReadyPlayerMeVisemeToBlendTargets()
+        {
+            for (int i= 0; i < _skinnedMeshRenderer.sharedMesh.blendShapeCount; i++)
             {
-                _connection.InitLipSync();
+                int originalIndex = Array.IndexOf(readyPlayerMeVisemes, _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i));
 
-                _lipSyncContext = gameObject.GetComponent<OVRLipSyncContext>();
-                if (!_lipSyncContext) _lipSyncContext = gameObject.AddComponent<OVRLipSyncContext>();
-
-                _lipSyncContextMorphTarget = gameObject.GetComponent<OVRLipSyncContextMorphTarget>();
-                if (!_lipSyncContextMorphTarget) _lipSyncContextMorphTarget = gameObject.AddComponent<OVRLipSyncContextMorphTarget>();
-
-                _lipSyncContext.audioLoopback = true;
-
-                _lipSyncContextMorphTarget.skinnedMeshRenderer = _skinnedMeshRenderer;
-                _lipSyncContextMorphTarget.visemeBlendRange = _visemeBlendRange;
+                if (originalIndex != -1) _lipSyncContextMorphTarget.visemeToBlendTargets[originalIndex] = i;
             }
         }
 
