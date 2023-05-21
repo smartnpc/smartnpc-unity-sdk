@@ -19,7 +19,7 @@ MonoBehaviour:
   TextureChannel: 0000000001000000
   UseHands: 0
   UseDracoCompression: 0
-  UseMeshOptCompression: 1
+  UseMeshOptCompression: 0
   MorphTargets:
   - Oculus Visemes
   - mouthOpen
