@@ -8,10 +8,18 @@ namespace SmartNPC
     public class SmartNPCCharacter : BaseEmitter
     {
         [SerializeField] private string _characterId;
+
+        [Header("OVR Lip Sync")]
+        [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
+        [SerializeField] [Range(1, 100)] private int _visemeBlendRange = 1;
+
+        
         private SmartNPCConnection _connection;
         private SmartNPCVoice _voice;
         private SmartNPCCharacterInfo _info;
         private List<SmartNPCMessage> _messages;
+        private OVRLipSyncContext _lipSyncContext;
+        private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
         private bool _messageInProgress = false; // message sent until message complete
         private bool _speaking = false; // message first progress until message complete
 
@@ -32,6 +40,22 @@ namespace SmartNPC
             _connection = FindObjectOfType<SmartNPCConnection>();
 
             _connection.OnReady(Init);
+
+            if (_skinnedMeshRenderer)
+            {
+                _connection.InitLipSync();
+
+                _lipSyncContext = gameObject.GetComponent<OVRLipSyncContext>();
+                if (!_lipSyncContext) _lipSyncContext = gameObject.AddComponent<OVRLipSyncContext>();
+
+                _lipSyncContextMorphTarget = gameObject.GetComponent<OVRLipSyncContextMorphTarget>();
+                if (!_lipSyncContextMorphTarget) _lipSyncContextMorphTarget = gameObject.AddComponent<OVRLipSyncContextMorphTarget>();
+
+                _lipSyncContext.audioLoopback = true;
+
+                _lipSyncContextMorphTarget.skinnedMeshRenderer = _skinnedMeshRenderer;
+                _lipSyncContextMorphTarget.visemeBlendRange = _visemeBlendRange;
+            }
         }
 
         private void Init()
