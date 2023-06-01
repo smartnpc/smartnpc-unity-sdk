@@ -57,6 +57,8 @@ namespace SmartNPC
 
             _connection = FindObjectOfType<SmartNPCConnection>();
 
+            if (!_connection) throw new Exception("No SmartNPCConnection found");
+
             _connection.OnReady(Init);
 
             if (_skinnedMeshRenderer) InitLipSync();

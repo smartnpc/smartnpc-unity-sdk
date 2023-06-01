@@ -21,28 +21,37 @@ namespace SmartNPC
         private float collectCounter;
         private int lastPosition;
         private bool processing = false;
+        private bool processedFirstChunk = false;
+        private string text = "";
 
-        public readonly UnityEvent OnStart = new UnityEvent();
-        public readonly UnityEvent<string> OnProgress = new UnityEvent<string>();
+        public readonly UnityEvent<bool> OnStart = new UnityEvent<bool>();
+        public readonly UnityEvent OnStartProcessing = new UnityEvent();
+        public readonly UnityEvent<string, bool> OnProgress = new UnityEvent<string, bool>();
+        public readonly UnityEvent<string> OnFinishing = new UnityEvent<string>();
         public readonly UnityEvent<string> OnComplete = new UnityEvent<string>();
+        public readonly UnityEvent OnAbort = new UnityEvent();
         public readonly UnityEvent<string> OnException = new UnityEvent<string>();
 
         private SpeechRecognitionTester tester;
 
-        public void StartRecording()
+        public void StartRecording(bool recover = false)
         {
             if (recording) return;
 
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
-
+            
             recordingClip = Microphone.Start(null, true, microphoneBufferLengthSeconds, frequency);
 
             lastPosition = Microphone.GetPosition(null);
 
             recording = true;
             recordingUntilFinishProcessing = false;
+            processedFirstChunk = false;
+            text = "";
 
             collectCounter = 0;
+
+            InvokeOnUpdate(() => OnStart.Invoke(recover));
         }
 
         public void StopRecording()
@@ -51,14 +60,33 @@ namespace SmartNPC
 
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
-            if (processing) recordingUntilFinishProcessing = true;
-            else
+            if (processing)
             {
-                Microphone.End(null);
+                if (!processedFirstChunk)
+                {
+                    InvokeOnUpdate(() => OnAbort.Invoke());
 
-                recordingClip = null;
-                recording = false;
+                    End();
+                }
+                else
+                {
+                    recordingUntilFinishProcessing = true;
+
+                    InvokeOnUpdate(() => OnFinishing.Invoke(text));
+                }
             }
+            else End();
+        }
+
+        private void End()
+        {
+            Microphone.End(null);
+
+            recordingClip = null;
+            recording = false;
+            recordingUntilFinishProcessing = false;
+            processedFirstChunk = false;
+            text = "";
         }
 
         public void ToggleRecording()
@@ -73,6 +101,8 @@ namespace SmartNPC
             chunkBuffer = new float[chunkBufferSize];
 
             _connection = FindObjectOfType<SmartNPCConnection>();
+
+            if (!_connection) throw new Exception("No SmartNPCConnection found");
 
             _connection.OnReady(Init);
         }
@@ -115,15 +145,31 @@ namespace SmartNPC
             if (result.status.Equals(StreamStatus.Start)) {
                 processing = true;
 
-                InvokeOnUpdate(() => OnStart.Invoke());
+                InvokeOnUpdate(() => OnStartProcessing.Invoke());
             }
             else if (result.status == StreamStatus.Progress)
             {
-                InvokeOnUpdate(() => OnProgress.Invoke(result.text));
+                processedFirstChunk = true;
+
+                text = result.text;
+
+                InvokeOnUpdate(() => {
+                    // recover in case aborted before received first response
+                    if (!recording)
+                    {
+                        StartRecording(true);
+
+                        recordingUntilFinishProcessing = true;
+                    }
+
+                    OnProgress.Invoke(result.text, recordingUntilFinishProcessing);
+                });
             }
             else if (result.status.Equals(StreamStatus.Complete))
             {
                 processing = false;
+
+                text = result.text;
 
                 InvokeOnUpdate(() => {
                     OnFinishProcessing();
