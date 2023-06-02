@@ -38,13 +38,6 @@ namespace SmartNPC
         [SerializeField] private Color _rawSpeechColor = Color.yellow;
 
 
-        [Header("Message History Log")]
-        [SerializeField] private bool _messageHistoryLog = false;
-        [SerializeField] private TextMeshProUGUI _logTextField;
-        [SerializeField] private string _messageFormat = DefaultMessageFormat;
-        [SerializeField] private string _errorFormat = DefaultErrorFormat;
-
-
         private SmartNPCConnection _connection;
 
         private bool _hasRecordingText = false;
@@ -58,12 +51,9 @@ namespace SmartNPC
         public readonly UnityEvent<List<SmartNPCMessage>> OnMessageHistoryChange = new UnityEvent<List<SmartNPCMessage>>();
         
         public readonly UnityEvent<string, bool> OnSubtitlesChange = new UnityEvent<string, bool>();
-        public readonly UnityEvent<string> OnMessageHistoryLogChange = new UnityEvent<string>();
 
         void Awake()
         {
-            SetVisibility(false);
-
             _connection = FindObjectOfType<SmartNPCConnection>();
 
             if (!_connection) throw new Exception("No SmartNPCConnection found");
@@ -73,8 +63,6 @@ namespace SmartNPC
 
         private void Init()
         {
-            if (_character) AddListeners();
-
             if (_inputTextField)
             {
                 _inputTextField.placeholder.GetComponent<TextMeshProUGUI>().text = GetPlaceholder();
@@ -85,6 +73,10 @@ namespace SmartNPC
             if (_recordingTextField) _recordingTextField.raycastTarget = false;
 
             if (_nameTextField) _nameTextField.raycastTarget = false;
+
+            SetVisibility(false);
+
+            if (_character) AddListeners();
         }
 
         override protected void Update()
@@ -181,13 +173,6 @@ namespace SmartNPC
             OnSubtitlesChange.Invoke(text, rawSpeech);
         }
 
-        private void MessageHistoryLogChange(string text)
-        {
-            if (_messageHistoryLog && _logTextField) _logTextField.text = text;
-
-            OnMessageHistoryLogChange.Invoke(text);
-        }
-
         private void MessageStart(SmartNPCMessage message)
         {
             SetVisibility(false);
@@ -235,8 +220,6 @@ namespace SmartNPC
         private void MessageHistoryChange(List<SmartNPCMessage> messages)
         {
             OnMessageHistoryChange.Invoke(messages);
-
-            MessageHistoryLogChange(GetMessageLog(_character, messages, _messageFormat, _errorFormat));
         }
 
         private void SpeechRecognitionStart(bool recover)
@@ -322,16 +305,13 @@ namespace SmartNPC
             _connection.SpeechRecognition.OnAbort.AddListener(SpeechRecognitionAbort);
             _connection.SpeechRecognition.OnException.AddListener(SpeechRecognitionException);
 
-            if (_character.Messages != null)
-            {
-                MessageHistoryLogChange(GetMessageLog(_character, _character.Messages, _messageFormat, _errorFormat));
-            }
+            if (_character.Messages != null) OnMessageHistoryChange.Invoke(_character.Messages);
 
             _character.OnReady(OnCharacterReady);
 
-            bool textInvisible = (!_speechRecognition && !_textMessage) || !_character || _character.MessageInProgress;
+            bool invisible = (!_speechRecognition && !_textMessage) || !_character || _character.MessageInProgress;
 
-            SetVisibility(!textInvisible);
+            SetVisibility(!invisible);
         }
 
         private void OnCharacterReady()
@@ -404,33 +384,9 @@ namespace SmartNPC
             
             RemoveListeners();
         }
+        
 
-
-        public static string GetMessageLog(
-            SmartNPCCharacter character,
-            List<SmartNPCMessage> messages,
-            string messageFormat = DefaultMessageFormat,
-            string errorFormat = DefaultErrorFormat
-        )
-        {
-            return string.Join("\n", messages.ConvertAll<string>(message => GetMessageText(character, message, messageFormat, errorFormat)));
-        }
-
-        private static string GetMessageText(SmartNPCCharacter character, SmartNPCMessage message, string messageFormat, string errorFormat)
-        {
-            string result = FormatMessage(character.Connection.PlayerName, message.message, messageFormat);
-
-            if (message.exception != null) result += " " + errorFormat.Replace("%error%", message.exception);
-
-            if (message.response != null && message.response != "")
-            {
-                result += "\n" + FormatMessage(character.Info.name, message.response, messageFormat);
-            }
-
-            return result;
-        }
-
-        private static string FormatMessage(string name, string message, string format)
+        public static string FormatMessage(string name, string message, string format)
         {
             return format.Replace("%name%", name).Replace("%message%", message);
         }
