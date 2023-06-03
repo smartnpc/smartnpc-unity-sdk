@@ -15,12 +15,12 @@ namespace SmartNPC
         [SerializeField] private SmartNPCCharacter _character;
         [SerializeField] private TextMeshProUGUI _nameTextField;
         [SerializeField] private TMP_InputField _inputTextField;
+        [SerializeField] [Tooltip("Hold this key to speak to press it to type")] private KeyCode _inputKey = KeyCode.LeftControl;
 
 
         [Header("Speech Recognition")]
         
         [SerializeField] private bool _speechRecognition = true;
-        [SerializeField] private KeyCode _holdToRecordKey = KeyCode.LeftControl;
         [SerializeField] private TextMeshProUGUI _recordingTextField;
 
 
@@ -63,12 +63,7 @@ namespace SmartNPC
 
         private void Init()
         {
-            if (_inputTextField)
-            {
-                _inputTextField.placeholder.GetComponent<TextMeshProUGUI>().text = GetPlaceholder();
-
-                _inputTextField.enabled = _textMessage;
-            }
+            if (_inputTextField) _inputTextField.enabled = _textMessage;
 
             if (_recordingTextField) _recordingTextField.raycastTarget = false;
 
@@ -83,42 +78,78 @@ namespace SmartNPC
         {
             base.Update();
 
-            if (Input.GetKeyDown(_holdToRecordKey) && _character && !_character.MessageInProgress)
+            if (_inputTextField)
             {
-                if (_speechRecognition) _connection.SpeechRecognition.StartRecording();
+                _inputTextField.placeholder.GetComponent<TextMeshProUGUI>().text = _inputTextField.isFocused ? GetTypingPlaceholder() : GetIdlePlaceholder();
             }
-            else if (Input.GetKeyUp(_holdToRecordKey))
+
+            if (Input.GetKeyDown(_inputKey) && _character && !_character.MessageInProgress)
+            {
+                if (_speechRecognition && _textMessage) InvokeUtility.Invoke(this, StartRecordingOrToggleInputFocus, 0.2f);
+                else if (_speechRecognition) _connection.SpeechRecognition.StartRecording();
+                else if (_textMessage) ToggleInputFocus();
+            }
+            else if (Input.GetKeyUp(_inputKey))
             {
                 _connection.SpeechRecognition.StopRecording();
             }
 
-            if (_textMessage && Input.GetKeyDown(_sendTextMessageKey) && _inputTextField.text != "")
+            if (_textMessage && Input.GetKeyDown(_sendTextMessageKey) && _inputTextField && _inputTextField.text != "")
             {
                 SendMessage(_inputTextField.text);
 
                 _inputTextField.text = "";
-
-                if (_inputTextField) _inputTextField.ActivateInputField(); // maintain focus
             }
         }
 
-        private string GetPlaceholder()
+        private void StartRecordingOrToggleInputFocus()
+        {
+            if (Input.GetKey(_inputKey)) _connection.SpeechRecognition.StartRecording();
+            else ToggleInputFocus();
+        }
+
+        private void ToggleInputFocus()
+        {
+            if (!_inputTextField) return;
+
+            if (_inputTextField.isFocused) DeactivateInputField();
+            else _inputTextField.ActivateInputField();
+        }
+
+        private void DeactivateInputField()
+        {
+            // workaround. _inputTextField.DeactivateInputField() and EventSystem.current.SetSelectedGameObject(null) don't work
+            _inputTextField.interactable = false;
+
+            InvokeUtility.Invoke(this, EnableInputField, 0.2f);
+        }
+
+        private void EnableInputField()
+        {
+            _inputTextField.interactable = true;
+        }
+
+        private string GetIdlePlaceholder()
         {
             string result = "";
 
             if (_speechRecognition)
             {
-                result += "Hold [%recordKey%] to Talk".Replace("%recordKey%", GetKeyName(_holdToRecordKey));
+                result += "Hold [%inputKey%] to Speak".Replace("%inputKey%", GetKeyName(_inputKey));
             }
 
             if (_textMessage)
             {
-                if (_speechRecognition) result += " or ";
-
-                result += "Type a message and press [%sendKey%] to Send".Replace("%sendKey%", GetKeyName(_sendTextMessageKey));
+                if (_speechRecognition) result += " or press it to Type";
+                else result += "Press [%inputKey%] to Type".Replace("%inputKey%", GetKeyName(_sendTextMessageKey));
             }
             
             return result;
+        }
+
+        private string GetTypingPlaceholder()
+        {
+            return "Type a message and press [%sendTextMessageKey%] to Send".Replace("%sendTextMessageKey%", GetKeyName(_sendTextMessageKey));
         }
 
         private void SetVisibility(bool visible)
@@ -128,6 +159,15 @@ namespace SmartNPC
             if (_nameTextField) _nameTextField.gameObject.GetComponent<CanvasRenderer>().SetAlpha(alpha);
 
             SetInputTextVisibility(visible, true);
+        }
+
+        private void SetActive(bool active)
+        {
+            float alpha = active ? 1f : 0.5f;
+
+            if (_nameTextField) _nameTextField.gameObject.GetComponent<CanvasRenderer>().SetAlpha(alpha);
+
+            if (_inputTextField) _inputTextField.interactable = active;
         }
 
         private void SetInputTextVisibility(bool visible, bool includeBackground = false)
@@ -175,7 +215,7 @@ namespace SmartNPC
 
         private void MessageStart(SmartNPCMessage message)
         {
-            SetVisibility(false);
+            SetActive(false);
 
             OnMessageStart.Invoke(message);
         }
@@ -201,7 +241,7 @@ namespace SmartNPC
 
         private void MessageComplete(SmartNPCMessage message)
         {
-           SetVisibility(true);
+           SetActive(true);
             
             OnMessageComplete.Invoke(message);
 
@@ -212,7 +252,7 @@ namespace SmartNPC
 
         private void MessageException(SmartNPCMessage message)
         {
-            SetVisibility(true);
+            SetActive(true);
             
             OnMessageException.Invoke(message);
         }
@@ -312,6 +352,7 @@ namespace SmartNPC
             bool invisible = (!_speechRecognition && !_textMessage) || !_character || _character.MessageInProgress;
 
             SetVisibility(!invisible);
+            if (_character) SetActive(!_character.MessageInProgress);
         }
 
         private void OnCharacterReady()
@@ -345,6 +386,11 @@ namespace SmartNPC
             if (_nameTextField) _nameTextField.text = "";
 
             SetVisibility(false);
+        }
+
+        public bool InputTextFieldFocused
+        {
+            get { return _inputTextField.isFocused; }
         }
 
         public SmartNPCConnection Connection
