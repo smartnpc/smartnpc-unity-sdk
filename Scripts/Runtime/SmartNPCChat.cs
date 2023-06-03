@@ -381,6 +381,8 @@ namespace SmartNPC
 
         private void OnCharacterReady()
         {
+            if (!_character) return;
+            
             if (_character.Messages != null) OnMessageHistoryChange.Invoke(_character.Messages);
 
             if (_nameTextField) _nameTextField.text = _character.Info.name;
