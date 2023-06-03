@@ -15,7 +15,18 @@ namespace SmartNPC
         [SerializeField] private SmartNPCCharacter _character;
         [SerializeField] private TextMeshProUGUI _nameTextField;
         [SerializeField] private TMP_InputField _inputTextField;
-        [SerializeField] [Tooltip("Hold this key to speak to press it to type")] private KeyCode _inputKey = KeyCode.LeftControl;
+
+        [SerializeField]
+        [Tooltip("Hold this key to speak to press it to type")]
+        private KeyCode _inputKey = KeyCode.LeftControl;
+
+
+        [Header("Camera Target")]
+
+        [SerializeField]
+        [Tooltip("Automatically set to the character the main camera is looking at")]
+        private bool _cameraTarget = false;
+        [SerializeField] private int _maxDistance = 5;
 
 
         [Header("Speech Recognition")]
@@ -100,6 +111,8 @@ namespace SmartNPC
 
                 _inputTextField.text = "";
             }
+
+            if (_cameraTarget) Character = GetCameraTarget();
         }
 
         private void StartRecordingOrToggleInputFocus()
@@ -328,6 +341,24 @@ namespace SmartNPC
             if (_character) _character.ClearMessageHistory();
         }
 
+        private SmartNPCCharacter GetCameraTarget()
+        {
+            RaycastHit hit;
+
+            Vector3 cameraCenter = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, Camera.main.nearClipPlane));
+
+            if (Physics.SphereCast(cameraCenter, 1f, Camera.main.transform.transform.forward, out hit, _maxDistance))
+            {
+                GameObject target = hit.transform.gameObject;
+
+                SmartNPCCharacter character = target.GetComponent<SmartNPCCharacter>();
+                
+                return character;
+            }
+
+            return null;
+        }
+
         private void AddListeners()
         {
             _character.OnMessageStart.AddListener(MessageStart);
@@ -345,19 +376,17 @@ namespace SmartNPC
             _connection.SpeechRecognition.OnAbort.AddListener(SpeechRecognitionAbort);
             _connection.SpeechRecognition.OnException.AddListener(SpeechRecognitionException);
 
-            if (_character.Messages != null) OnMessageHistoryChange.Invoke(_character.Messages);
-
             _character.OnReady(OnCharacterReady);
-
-            bool invisible = (!_speechRecognition && !_textMessage) || !_character || _character.MessageInProgress;
-
-            SetVisibility(!invisible);
-            if (_character) SetActive(!_character.MessageInProgress);
         }
 
         private void OnCharacterReady()
         {
+            if (_character.Messages != null) OnMessageHistoryChange.Invoke(_character.Messages);
+
             if (_nameTextField) _nameTextField.text = _character.Info.name;
+
+            SetVisibility(true);
+            SetActive(!_character.MessageInProgress);
 
             SetReady();
         }
@@ -384,6 +413,7 @@ namespace SmartNPC
             ResetReady();
 
             if (_nameTextField) _nameTextField.text = "";
+            if (_subtitlesTextField) _subtitlesTextField.text = "";
 
             SetVisibility(false);
         }

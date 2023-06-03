@@ -7,6 +7,8 @@ namespace SmartNPC
 {
     public class SmartNPCCharacter : BaseEmitter
     {
+        public static readonly List<SmartNPCCharacter> Characters = new List<SmartNPCCharacter>();
+
         [SerializeField] private string _characterId;
 
         [Header("OVR Lip Sync")]
@@ -62,6 +64,8 @@ namespace SmartNPC
             _connection.OnReady(Init);
 
             if (_skinnedMeshRenderer) InitLipSync();
+
+            Characters.Add(this);
         }
 
         private void InitLipSync()
@@ -338,6 +342,8 @@ namespace SmartNPC
             OnMessageComplete.RemoveAllListeners();
             OnMessageException.RemoveAllListeners();
             OnMessageHistoryChange.RemoveAllListeners();
+
+            Characters.Remove(this);
         }
     }
 }
