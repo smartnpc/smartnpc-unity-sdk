@@ -1,6 +1,6 @@
 {
   "name": "ai.smartnpc.client",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "displayName": "SmartNPC",
   "description": "AI-Powered Characters",
   "unity": "2019.1",
