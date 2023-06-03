@@ -89,11 +89,13 @@ namespace SmartNPC
         {
             base.Update();
 
-            if (_inputTextField)
-            {
-                _inputTextField.placeholder.GetComponent<TextMeshProUGUI>().text = _inputTextField.isFocused ? GetTypingPlaceholder() : GetIdlePlaceholder();
-            }
+            SetPlaceholder();
+            ProcessInput();
+            SetCameraTarget();
+        }
 
+        private void ProcessInput()
+        {
             if (Input.GetKeyDown(_inputKey) && _character && !_character.MessageInProgress)
             {
                 if (_speechRecognition && _textMessage) InvokeUtility.Invoke(this, StartRecordingOrToggleInputFocus, 0.2f);
@@ -111,8 +113,6 @@ namespace SmartNPC
 
                 _inputTextField.text = "";
             }
-
-            if (_cameraTarget) Character = GetCameraTarget();
         }
 
         private void StartRecordingOrToggleInputFocus()
@@ -142,6 +142,13 @@ namespace SmartNPC
             _inputTextField.interactable = true;
         }
 
+        private void SetPlaceholder()
+        {
+            if (!_inputTextField) return;
+            
+            _inputTextField.placeholder.GetComponent<TextMeshProUGUI>().text = _inputTextField.isFocused ? GetTypingPlaceholder() : GetIdlePlaceholder();
+        }
+
         private string GetIdlePlaceholder()
         {
             string result = "";
@@ -154,7 +161,7 @@ namespace SmartNPC
             if (_textMessage)
             {
                 if (_speechRecognition) result += " or press it to Type";
-                else result += "Press [%inputKey%] to Type".Replace("%inputKey%", GetKeyName(_sendTextMessageKey));
+                else result += "Press [%inputKey%] to Type".Replace("%inputKey%", GetKeyName(_inputKey));
             }
             
             return result;
@@ -339,6 +346,15 @@ namespace SmartNPC
         public void ClearMessageHistory()
         {
             if (_character) _character.ClearMessageHistory();
+        }
+
+        private void SetCameraTarget()
+        {
+            if (!_cameraTarget) return;
+
+            if (!Camera.main) throw new Exception("No main camera is found");
+
+            Character = GetCameraTarget();
         }
 
         private SmartNPCCharacter GetCameraTarget()
