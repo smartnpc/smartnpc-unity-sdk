@@ -141,7 +141,7 @@ MonoBehaviour:
   _nameTextField: {fileID: 4971046595494017469}
   _inputTextField: {fileID: 4971046594483322420}
   _inputKey: 306
-  _cameraTarget: 1
+  _cameraTarget: 0
   _maxDistance: 5
   _speechRecognition: 1
   _recordingTextField: {fileID: 4971046594439851482}
