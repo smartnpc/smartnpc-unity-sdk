@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using TMPro;
 using System.Text.RegularExpressions;
 
@@ -74,6 +75,8 @@ namespace SmartNPC
 
         private void Init()
         {
+            InitInput();
+
             if (_inputTextField) _inputTextField.enabled = _textMessage;
 
             if (_recordingTextField) _recordingTextField.raycastTarget = false;
@@ -83,6 +86,17 @@ namespace SmartNPC
             SetVisibility(false);
 
             if (_character) AddListeners();
+        }
+
+        private void InitInput()
+        {
+            if (!FindObjectOfType<EventSystem>())
+            {
+                gameObject.AddComponent<EventSystem>();
+
+                if (!FindObjectOfType<StandaloneInputModule>()) gameObject.AddComponent<StandaloneInputModule>();
+                if (!FindObjectOfType<BaseInput>()) gameObject.AddComponent<BaseInput>();
+            }
         }
 
         override protected void Update()
