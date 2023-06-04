@@ -280,7 +280,7 @@ namespace SmartNPC
             OnMessageComplete.Invoke(message);
 
             InvokeUtility.Invoke(this, (Action)(() => {
-                if (!_hasRecordingText) SubtitlesChange(_character.Info.name, "", false);
+                if (!_hasRecordingText) SubtitlesChange(_character ? _character.Info.name : "", "", false);
             }), 3);
         }
 
