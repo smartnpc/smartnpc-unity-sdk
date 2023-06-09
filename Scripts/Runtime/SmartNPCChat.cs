@@ -22,11 +22,11 @@ namespace SmartNPC
         private KeyCode _inputKey = KeyCode.LeftControl;
 
 
-        [Header("Camera Target")]
+        [Header("Auto Target")]
 
         [SerializeField]
-        [Tooltip("Automatically set to the character the main camera is looking at")]
-        private bool _cameraTarget = false;
+        [Tooltip("Automatically set to the character that the defined origin is looking at")]
+        private SmartNPCChatTargetOrigin _targetOrigin = SmartNPCChatTargetOrigin.None;
         [SerializeField] private int _maxDistance = 5;
 
 
@@ -105,7 +105,7 @@ namespace SmartNPC
 
             SetPlaceholder();
             ProcessInput();
-            SetCameraTarget();
+            SetTarget();
         }
 
         private void ProcessInput()
@@ -362,22 +362,39 @@ namespace SmartNPC
             if (_character) _character.ClearMessageHistory();
         }
 
-        private void SetCameraTarget()
+        private void SetTarget()
         {
-            if (!_cameraTarget) return;
-
-            if (!Camera.main) throw new Exception("No main camera is found");
-
-            Character = GetCameraTarget();
+            if (_targetOrigin == SmartNPCChatTargetOrigin.Camera) Character = GetCameraTarget();
+            else if (_targetOrigin == SmartNPCChatTargetOrigin.Player) Character = GetPlayerTarget();
         }
 
         private SmartNPCCharacter GetCameraTarget()
         {
-            RaycastHit hit;
+            if (!Camera.main) throw new Exception("Auto Target: No main camera found");
 
             Vector3 cameraCenter = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2f, Screen.height / 2f, Camera.main.nearClipPlane));
 
-            if (Physics.SphereCast(cameraCenter, 1f, Camera.main.transform.transform.forward, out hit, _maxDistance))
+            return GetTarget(cameraCenter, Camera.main.transform.forward);
+        }
+
+        private SmartNPCCharacter GetPlayerTarget()
+        {
+            SmartNPCPlayer player = FindObjectOfType<SmartNPCPlayer>();
+
+            if (!player)  throw new Exception("Auto Target: No SmartNPCPlayer found");
+
+            Collider collider = player.GetComponent<Collider>();
+
+            if (!collider) throw new Exception("Auto Target: SmartNPCPlayer must have a collider");
+
+            return GetTarget(collider.bounds.center, player.transform.forward);
+        }
+
+        private SmartNPCCharacter GetTarget(Vector3 origin, Vector3 direction)
+        {
+            RaycastHit hit;
+
+            if (Physics.SphereCast(origin, 1f, direction, out hit, _maxDistance))
             {
                 GameObject target = hit.transform.gameObject;
 
