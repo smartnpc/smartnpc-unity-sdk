@@ -492,6 +492,13 @@ namespace SmartNPC
             }
         }
 
+        public SmartNPCChatTargetOrigin TargetOrigin
+        {
+            get { return _targetOrigin; }
+            
+            set { _targetOrigin = value; }
+        }
+
         public bool SpeechRecognition
         {
             get { return _speechRecognition; }
