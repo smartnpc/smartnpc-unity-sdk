@@ -472,6 +472,28 @@ namespace SmartNPC
             get { return _inputTextField.isFocused; }
         }
 
+        public bool IsRecording
+        {
+            get { return _connection.SpeechRecognition && _connection.SpeechRecognition.IsRecording; }
+        }
+
+        public bool CharacterSpeaking
+        {
+            get { return _character && _character.Speaking; }
+        }
+
+        public bool CharacterMessageInProgress
+        {
+            get { return _character && _character.MessageInProgress; }
+        }
+
+        public bool InteractionInProgress
+        {
+            get { return InputTextFieldFocused || IsRecording || CharacterMessageInProgress; }
+        }
+
+
+
         public SmartNPCConnection Connection
         {
             get { return _connection; }

@@ -39,12 +39,14 @@ namespace SmartNPC
         
         void Awake()
         {
-            if (_keyId == null|| _keyId == "" || _publicKey == null || _publicKey == "")
+            if (_keyId == null || _keyId == "" || _publicKey == null || _publicKey == "")
             {
                 throw new Exception("Must specify Key Id and Public Key");
             }
 
-            _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
+            _speechRecognition = FindObjectOfType<SmartNPCSpeechRecognition>();
+
+            if (!_speechRecognition) _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
 
             var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
 

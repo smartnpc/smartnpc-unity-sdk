@@ -58,8 +58,6 @@ namespace SmartNPC
 
             _behaviorQueue = gameObject.AddComponent<SmartNPCBehaviorQueue>();
 
-            Debug.Log("Awake _behaviorQueue: " + _behaviorQueue);
-
             _connection = FindObjectOfType<SmartNPCConnection>();
 
             if (!_connection) throw new Exception("No SmartNPCConnection found");
