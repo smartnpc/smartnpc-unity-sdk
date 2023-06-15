@@ -23,6 +23,10 @@ namespace SmartNPC
         [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
 
 
+        [Header("Behaviors")]
+        [SerializeField] private bool _behaviorsEnabled = false;
+
+
         [Header("Advanced Settings")]
         [SerializeField] private string _host;
 
@@ -35,12 +39,14 @@ namespace SmartNPC
         
         void Awake()
         {
-            if (_keyId == null|| _keyId == "" || _publicKey == null || _publicKey == "")
+            if (_keyId == null || _keyId == "" || _publicKey == null || _publicKey == "")
             {
                 throw new Exception("Must specify Key Id and Public Key");
             }
 
-            _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
+            _speechRecognition = FindObjectOfType<SmartNPCSpeechRecognition>();
+
+            if (!_speechRecognition) _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
 
             var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
 
@@ -219,6 +225,11 @@ namespace SmartNPC
         public float VoiceVolume
         {
             get { return _voiceVolume; }
+        }
+
+        public bool BehaviorsEnabled
+        {
+            get { return _behaviorsEnabled; }
         }
 
         public SmartNPCSpeechRecognition SpeechRecognition

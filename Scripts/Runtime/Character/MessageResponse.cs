@@ -8,5 +8,6 @@ namespace SmartNPC
         public string text;
         public string voice;
         public string character;
+        public SmartNPCBehavior behavior;
     }
 }
