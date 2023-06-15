@@ -23,6 +23,10 @@ namespace SmartNPC
         [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
 
 
+        [Header("Behaviors")]
+        [SerializeField] private bool _behaviorsEnabled = false;
+
+
         [Header("Advanced Settings")]
         [SerializeField] private string _host;
 
@@ -219,6 +223,11 @@ namespace SmartNPC
         public float VoiceVolume
         {
             get { return _voiceVolume; }
+        }
+
+        public bool BehaviorsEnabled
+        {
+            get { return _behaviorsEnabled; }
         }
 
         public SmartNPCSpeechRecognition SpeechRecognition

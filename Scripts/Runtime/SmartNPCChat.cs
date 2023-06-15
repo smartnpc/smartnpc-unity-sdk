@@ -32,18 +32,18 @@ namespace SmartNPC
 
         [Header("Speech Recognition")]
         
-        [SerializeField] private bool _speechRecognition = true;
+        [SerializeField] private bool _speechRecognitionEnabled = true;
         [SerializeField] private TextMeshProUGUI _recordingTextField;
 
 
         [Header("Text Message")]
         
-        [SerializeField] private bool _textMessage = true;
+        [SerializeField] private bool _textMessageEnabled = true;
         [SerializeField] private KeyCode _sendTextMessageKey = KeyCode.Return;
         
 
         [Header("Subtitles")]
-        [SerializeField] private bool _subtitles = true;
+        [SerializeField] private bool _subtitlesEnabled = true;
         [SerializeField] private TextMeshProUGUI _subtitlesTextField;
         [SerializeField] private string _subtitlesFormat = "<mark=#000000aa padding=\"20,20,2,2\">%name%: %message%</mark>";
         [SerializeField] private Color _defaultSubtitleColor = Color.white;
@@ -77,7 +77,7 @@ namespace SmartNPC
         {
             InitInput();
 
-            if (_inputTextField) _inputTextField.enabled = _textMessage;
+            if (_inputTextField) _inputTextField.enabled = _textMessageEnabled;
 
             if (_recordingTextField) _recordingTextField.raycastTarget = false;
 
@@ -112,16 +112,16 @@ namespace SmartNPC
         {
             if (Input.GetKeyDown(_inputKey) && _character && !_character.MessageInProgress)
             {
-                if (_speechRecognition && _textMessage) InvokeUtility.Invoke(this, StartRecordingOrToggleInputFocus, 0.2f);
-                else if (_speechRecognition) _connection.SpeechRecognition.StartRecording();
-                else if (_textMessage) ToggleInputFocus();
+                if (_speechRecognitionEnabled && _textMessageEnabled) InvokeUtility.Invoke(this, StartRecordingOrToggleInputFocus, 0.2f);
+                else if (_speechRecognitionEnabled) _connection.SpeechRecognition.StartRecording();
+                else if (_textMessageEnabled) ToggleInputFocus();
             }
             else if (Input.GetKeyUp(_inputKey))
             {
                 _connection.SpeechRecognition.StopRecording();
             }
 
-            if (_textMessage && Input.GetKeyDown(_sendTextMessageKey) && _inputTextField && _inputTextField.text != "")
+            if (_textMessageEnabled && Input.GetKeyDown(_sendTextMessageKey) && _inputTextField && _inputTextField.text != "")
             {
                 SendMessage(_inputTextField.text);
 
@@ -167,14 +167,14 @@ namespace SmartNPC
         {
             string result = "";
 
-            if (_speechRecognition)
+            if (_speechRecognitionEnabled)
             {
                 result += "Hold [%inputKey%] to Speak".Replace("%inputKey%", GetKeyName(_inputKey));
             }
 
-            if (_textMessage)
+            if (_textMessageEnabled)
             {
-                if (_speechRecognition) result += " or press it to Type";
+                if (_speechRecognitionEnabled) result += " or press it to Type";
                 else result += "Press [%inputKey%] to Type".Replace("%inputKey%", GetKeyName(_inputKey));
             }
             
@@ -238,7 +238,7 @@ namespace SmartNPC
         {
             string text = message != "" ? FormatMessage(name, message, _subtitlesFormat) : "";
 
-            if (_subtitles && _subtitlesTextField)
+            if (_subtitlesEnabled && _subtitlesTextField)
             {
                 _subtitlesTextField.color = rawSpeech ? _rawSpeechColor : _defaultSubtitleColor;
                 _subtitlesTextField.text = text;
@@ -501,12 +501,12 @@ namespace SmartNPC
 
         public bool SpeechRecognition
         {
-            get { return _speechRecognition; }
+            get { return _speechRecognitionEnabled; }
             
             set {
-                if (value == _speechRecognition) return;
+                if (value == _speechRecognitionEnabled) return;
 
-                _speechRecognition = value;
+                _speechRecognitionEnabled = value;
             }
         }
         

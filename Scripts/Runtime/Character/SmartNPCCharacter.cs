@@ -7,8 +7,6 @@ namespace SmartNPC
 {
     public class SmartNPCCharacter : BaseEmitter
     {
-        public static readonly List<SmartNPCCharacter> Characters = new List<SmartNPCCharacter>();
-
         [SerializeField] private string _characterId;
 
         [Header("OVR Lip Sync")]
@@ -20,10 +18,11 @@ namespace SmartNPC
         private SmartNPCVoice _voice;
         private SmartNPCCharacterInfo _info;
         private List<SmartNPCMessage> _messages;
+        private SmartNPCBehaviorQueue _behaviorQueue;
         private OVRLipSyncContext _lipSyncContext;
         private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
-        private bool _messageInProgress = false; // message sent until message complete
-        private bool _speaking = false; // message first progress until message complete
+        private bool _messageInProgress = false; // from message sent until message complete
+        private bool _speaking = false; // from message first progress until message complete
 
         public readonly UnityEvent<SmartNPCMessage> OnMessageStart = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageProgress = new UnityEvent<SmartNPCMessage>();
@@ -57,6 +56,10 @@ namespace SmartNPC
 
             _voice = gameObject.AddComponent<SmartNPCVoice>();
 
+            _behaviorQueue = gameObject.AddComponent<SmartNPCBehaviorQueue>();
+
+            Debug.Log("Awake _behaviorQueue: " + _behaviorQueue);
+
             _connection = FindObjectOfType<SmartNPCConnection>();
 
             if (!_connection) throw new Exception("No SmartNPCConnection found");
@@ -64,8 +67,6 @@ namespace SmartNPC
             _connection.OnReady(Init);
 
             if (_skinnedMeshRenderer) InitLipSync();
-
-            Characters.Add(this);
         }
 
         private void InitLipSync()
@@ -164,6 +165,7 @@ namespace SmartNPC
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
             string text = "";
+            List<SmartNPCBehavior> behaviors = new List<SmartNPCBehavior>();
 
             _messageInProgress = true;
 
@@ -179,13 +181,19 @@ namespace SmartNPC
             };
 
             UnityAction<MessageResponse> emitTextProgress = (MessageResponse response) => {
-                text += response.text;
+                SmartNPCMessage value = new SmartNPCMessage { message = message };
+                
+                if (response.text != "")
+                {
+                    text += response.text;
 
-                SmartNPCMessage value = new SmartNPCMessage {
-                    message = message,
-                    response = text,
-                    chunk = response.text
-                };
+                    value.chunk = response.text;
+                }
+                
+                if (response.behavior != null) _behaviorQueue.Add(response.behavior);
+
+                value.response = text;
+                value.behaviors = behaviors;
 
                 emitProgress(value);
             };
@@ -244,7 +252,7 @@ namespace SmartNPC
                 _voice.OnPlayLastChunk.AddListener(onPlayLastChunk);
             }
 
-            SmartNPCMessage newMessage = new SmartNPCMessage { message = message, response = "" };
+            SmartNPCMessage newMessage = new SmartNPCMessage { message = message, response = text, behaviors = behaviors };
 
             _messages.Add(newMessage);
 
@@ -258,7 +266,8 @@ namespace SmartNPC
                 Data = new MessageData {
                     character = _characterId,
                     message = message,
-                    voice = _voice.Enabled
+                    voice = _voice.Enabled,
+                    behaviors = _connection.BehaviorsEnabled
                 },
                 OnProgress = (MessageResponse response) => {
                     if (_voice.Enabled && response.voice != null) InvokeOnUpdate(async () => await _voice.Add(response));
@@ -308,6 +317,11 @@ namespace SmartNPC
         {
             get { return _messages; }
         }
+        
+        public SmartNPCBehaviorQueue BehaviorQueue
+        {
+            get { return _behaviorQueue; }
+        }
 
         public SmartNPCConnection Connection
         {
@@ -334,6 +348,7 @@ namespace SmartNPC
             base.Dispose();
             
             _messages.Clear();
+            _behaviorQueue.Dispose();
 
             OnMessageStart.RemoveAllListeners();
             OnMessageProgress.RemoveAllListeners();
@@ -342,8 +357,6 @@ namespace SmartNPC
             OnMessageComplete.RemoveAllListeners();
             OnMessageException.RemoveAllListeners();
             OnMessageHistoryChange.RemoveAllListeners();
-
-            Characters.Remove(this);
         }
     }
 }
