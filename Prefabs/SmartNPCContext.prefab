@@ -161,6 +161,7 @@ MonoBehaviour:
   _playerName: 
   _voiceEnabled: 1
   _voiceVolume: 1
+  _behaviorsEnabled: 0
   _host: 
 --- !u!114 &6249644334665038220
 MonoBehaviour:
@@ -171,20 +172,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 6249644334665037939}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbea0a758016d934ca085602f498739d, type: 3}
+  m_Script: {fileID: 11500000, guid: 696fdfb7d8416be44b14e0de0905e632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _character: {fileID: 0}
   _nameTextField: {fileID: 6249644336350989972}
   _inputTextField: {fileID: 6249644335482636573}
   _inputKey: 306
-  _cameraTarget: 0
+  _targetOrigin: 0
   _maxDistance: 5
-  _speechRecognition: 1
+  _speechRecognitionEnabled: 1
   _recordingTextField: {fileID: 6249644335288998643}
-  _textMessage: 1
+  _textMessageEnabled: 1
   _sendTextMessageKey: 13
-  _subtitles: 1
+  _subtitlesEnabled: 1
   _subtitlesTextField: {fileID: 6249644335475079525}
   _subtitlesFormat: '<mark=#000000aa padding="20,20,2,2">%name%: %message%</mark>'
   _defaultSubtitleColor: {r: 1, g: 1, b: 1, a: 1}
