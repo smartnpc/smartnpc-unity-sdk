@@ -8,9 +8,6 @@ namespace SmartNPC
     public class SmartNPCCharacter : BaseEmitter
     {
         [SerializeField] private string _characterId;
-
-        // [SerializeField] private AnimationClip _danceClip;
-
         
 
         [Header("OVR Lip Sync")]
