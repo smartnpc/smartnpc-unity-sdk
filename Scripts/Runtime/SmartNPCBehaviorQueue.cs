@@ -40,6 +40,11 @@ namespace SmartNPC
             }
         }
 
+        public void StopConsuming(UnityAction<SmartNPCBehavior, UnityAction> handler)
+        {
+            OnConsume.RemoveListener(handler);
+        }
+
         private void Next()
         {
             if (_queue.Count == 0) return;

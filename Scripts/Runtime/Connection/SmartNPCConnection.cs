@@ -44,9 +44,7 @@ namespace SmartNPC
                 throw new Exception("Must specify Key Id and Public Key");
             }
 
-            _speechRecognition = FindObjectOfType<SmartNPCSpeechRecognition>();
-
-            if (!_speechRecognition) _speechRecognition = gameObject.AddComponent<SmartNPCSpeechRecognition>();
+            _speechRecognition = FindOrAddObjectOfType<SmartNPCSpeechRecognition>();
 
             var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
 

@@ -8,7 +8,7 @@ using UnityEngine.Events;
 
 namespace SmartNPC
 {
-    public class SmartNPCVoice : MonoBehaviour
+    public class SmartNPCVoice : BaseMonoBehaviour
     {
         private List<VoiceMessage> queue = new List<VoiceMessage>();
         private SmartNPCConnection _connection;
@@ -29,9 +29,7 @@ namespace SmartNPC
 
             if (!_connection) throw new Exception("No SmartNPCConnection found");
 
-            _audioSource = gameObject.GetComponent<AudioSource>();
-
-            if (!_audioSource) _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource = GetOrAddComponent<AudioSource>();
         }
 
         void Update()

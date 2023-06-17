@@ -9,6 +9,10 @@ namespace SmartNPC
     {
         [SerializeField] private string _characterId;
 
+        // [SerializeField] private AnimationClip _danceClip;
+
+        
+
         [Header("OVR Lip Sync")]
         [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
         [SerializeField] [Range(1, 100)] private int _visemeBlendRange = 1;
@@ -54,12 +58,11 @@ namespace SmartNPC
         {
             if (_characterId == null || _characterId == "") throw new Exception("Must specify Id");
 
-            _voice = gameObject.AddComponent<SmartNPCVoice>();
-
-            _behaviorQueue = gameObject.AddComponent<SmartNPCBehaviorQueue>();
+            _voice = GetOrAddComponent<SmartNPCVoice>();
+            _behaviorQueue = GetOrAddComponent<SmartNPCBehaviorQueue>();
 
             _connection = FindObjectOfType<SmartNPCConnection>();
-
+            
             if (!_connection) throw new Exception("No SmartNPCConnection found");
 
             _connection.OnReady(Init);
@@ -71,11 +74,8 @@ namespace SmartNPC
         {
             _connection.InitLipSync();
 
-            _lipSyncContext = gameObject.GetComponent<OVRLipSyncContext>();
-            if (!_lipSyncContext) _lipSyncContext = gameObject.AddComponent<OVRLipSyncContext>();
-
-            _lipSyncContextMorphTarget = gameObject.GetComponent<OVRLipSyncContextMorphTarget>();
-            if (!_lipSyncContextMorphTarget) _lipSyncContextMorphTarget = gameObject.AddComponent<OVRLipSyncContextMorphTarget>();
+            _lipSyncContext = GetOrAddComponent<OVRLipSyncContext>();
+            _lipSyncContextMorphTarget = GetOrAddComponent<OVRLipSyncContextMorphTarget>();
 
             _lipSyncContext.audioLoopback = true;
 
