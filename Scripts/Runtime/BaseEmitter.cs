@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace SmartNPC
 {
-    public class BaseEmitter : MonoBehaviour, IDisposable
+    public class BaseEmitter : BaseMonoBehaviour, IDisposable
     {
         private bool ready = false;
 
