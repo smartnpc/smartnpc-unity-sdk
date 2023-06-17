@@ -9,7 +9,7 @@ namespace SmartNPC
 {
     public class SmartNPCBehaviorsHandler : BaseEmitter
     {
-        [SerializeField] public List<SmartNPCAnimation> _gestures = new List<SmartNPCAnimation>();
+        [SerializeField] public List<SmartNPCGestureAnimation> _gestures = new List<SmartNPCGestureAnimation>();
 
         private SmartNPCCharacter _character;
         private Animator _animator;
@@ -58,7 +58,7 @@ namespace SmartNPC
         {
             for (int i = 0; i < _gestures.Count; i++)
             {
-                SmartNPCAnimation animation = _gestures[i];
+                SmartNPCGestureAnimation animation = _gestures[i];
 
                 if (animation.gestureName == behavior.name)
                 {
@@ -78,6 +78,20 @@ namespace SmartNPC
             await Task.Delay(500);
 
             CreateAnimationStates();
+        }
+
+        private bool StateExists(string name)
+        {
+            AnimatorStateMachine stateMachine = _animatorController.layers[0].stateMachine;
+            
+            for (int i = 0; i < stateMachine.states.Length; i++)
+            {
+                AnimatorState state = stateMachine.states[i].state;
+
+                if (state.name == name) return true;
+            }
+
+            return false;
         }
 
         private void ClearAnimationStates()
@@ -131,11 +145,16 @@ namespace SmartNPC
         {
             for (int i = 0; i < _gestures.Count; i++)
             {
-                SmartNPCAnimation item = _gestures[i];
+                SmartNPCGestureAnimation item = _gestures[i];
 
                 if (item.gestureName != null && item.gestureName != "" && item.animationClip != null)
                 {
                     CreateAnimationState(item.gestureName, item.animationClip);
+
+                    if (item.animationTrigger != null && item.animationTrigger != "")
+                    {
+                        Debug.LogWarning(item.gestureName + " gesture has both Animation Clip and Animation Trigger. Animation Trigger will be ignored.");
+                    }
                 }
             }
         }
@@ -150,14 +169,18 @@ namespace SmartNPC
             
             AnimatorState originalState = stateMachine.states[0].state;
 
-            AnimatorState state = stateMachine.AddState("SmartNPC-" + name);
+            string stateName = "SmartNPC-" + name;
+
+            if (StateExists(stateName)) return;
+
+            AnimatorState state = stateMachine.AddState(stateName);
 
             state.motion = animationClip;
 
             AnimatorControllerParameter trigger = new AnimatorControllerParameter();
 
             trigger.type = AnimatorControllerParameterType.Trigger;
-            trigger.name = "SmartNPC-" + name + "Trigger";
+            trigger.name = stateName + "Trigger";
             
             _animatorController.AddParameter(trigger);
             
@@ -166,19 +189,18 @@ namespace SmartNPC
 
             startTransition.AddCondition(AnimatorConditionMode.If, 0, trigger.name);
 
-            startTransition.name = "SmartNPC-" + name + "-Transition-Start";
+            startTransition.name = stateName + "-Transition-Start";
             startTransition.hasExitTime = false; // transition immediately when the condition is met
 
 
             AnimatorStateTransition endTransition = state.AddTransition(originalState);
 
-            endTransition.name = "SmartNPC-" + name + "-Transition-End";
+            endTransition.name = stateName + "-Transition-End";
             endTransition.hasExitTime = true; // transition once the animation finishes
         }
 
         public async Task TriggerAnimation(string name)
         {
-            Debug.Log("TriggerAnimation: " + name);
             _animator.SetTrigger(name);
 
             await WaitUntilAnimationFinished();
