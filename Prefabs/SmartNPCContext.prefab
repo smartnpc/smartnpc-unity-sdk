@@ -161,7 +161,8 @@ MonoBehaviour:
   _playerName: 
   _voiceEnabled: 1
   _voiceVolume: 1
-  _behaviorsEnabled: 0
+  _voiceMaxDistance: 20
+  _behaviorsEnabled: 1
   _host: 
 --- !u!114 &6249644334665038220
 MonoBehaviour:

@@ -30,6 +30,10 @@ namespace SmartNPC
             if (!_connection) throw new Exception("No SmartNPCConnection found");
 
             _audioSource = GetOrAddComponent<AudioSource>();
+
+            _audioSource.spatialBlend = 1; // 3d
+            _audioSource.rolloffMode = AudioRolloffMode.Linear;
+            _audioSource.maxDistance = _connection.VoiceMaxDistance;
         }
 
         void Update()

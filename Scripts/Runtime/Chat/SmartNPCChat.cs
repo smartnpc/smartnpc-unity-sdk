@@ -436,7 +436,8 @@ namespace SmartNPC
 
             SetVisibility(true);
             SetActive(!_character.MessageInProgress);
-
+            SubtitlesChange(_character.Info.name, _character.CurrentResponse, false);
+            
             SetReady();
         }
 
@@ -459,12 +460,13 @@ namespace SmartNPC
             _connection.SpeechRecognition.OnAbort.RemoveListener(SpeechRecognitionAbort);
             _connection.SpeechRecognition.OnException.RemoveListener(SpeechRecognitionException);
 
-            ResetReady();
 
             if (_nameTextField) _nameTextField.text = "";
-            if (_subtitlesTextField) _subtitlesTextField.text = "";
 
             SetVisibility(false);
+            SubtitlesChange(_character.Info.name, "", false);
+
+            ResetReady();
         }
 
         public bool InputTextFieldFocused

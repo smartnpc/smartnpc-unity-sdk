@@ -22,6 +22,7 @@ namespace SmartNPC
         private SmartNPCBehaviorQueue _behaviorQueue;
         private OVRLipSyncContext _lipSyncContext;
         private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
+        private string _currentResponse = "";
         private bool _messageInProgress = false; // from message sent until message complete
         private bool _speaking = false; // from message first progress until message complete
 
@@ -159,10 +160,11 @@ namespace SmartNPC
         {
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
-            string text = "";
             List<SmartNPCBehavior> behaviors = new List<SmartNPCBehavior>();
 
+            _currentResponse = "";
             _messageInProgress = true;
+            
 
             UnityAction<SmartNPCMessage> emitProgress = (SmartNPCMessage value) => {
                 _speaking = true;
@@ -180,25 +182,25 @@ namespace SmartNPC
                 
                 if (response.text != "")
                 {
-                    text += response.text;
+                    _currentResponse += response.text;
 
                     value.chunk = response.text;
                 }
                 
                 if (response.behavior != null) _behaviorQueue.Add(response.behavior);
 
-                value.response = text;
+                value.response = _currentResponse;
                 value.behaviors = behaviors;
 
                 emitProgress(value);
             };
 
             UnityAction<VoiceMessage> emitVoiceProgress = (VoiceMessage response) => {
-                text += response.rawResponse.text;
+                _currentResponse += response.rawResponse.text;
 
                 SmartNPCMessage value = new SmartNPCMessage {
                     message = message,
-                    response = text,
+                    response = _currentResponse,
                     chunk = response.rawResponse.text,
                     voiceClip = response.clip
                 };
@@ -213,7 +215,7 @@ namespace SmartNPC
                 UnityAction<VoiceMessage> onVoiceComplete = null;
                 
                 onVoiceComplete = (VoiceMessage response) => {
-                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };
+                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = _currentResponse };
 
                     InvokeOnUpdate(() => {
                         OnMessageVoiceComplete.Invoke(value);
@@ -221,6 +223,7 @@ namespace SmartNPC
 
                         _speaking = false;
                         _messageInProgress = false;
+                        _currentResponse = "";
                     });
 
                     _voice.OnVoiceProgress.RemoveListener(emitVoiceProgress);
@@ -232,7 +235,7 @@ namespace SmartNPC
                 onPlayLastChunk = (VoiceMessage response) => {
                     SmartNPCMessage value = new SmartNPCMessage {
                         message = message,
-                        response = text,
+                        response = _currentResponse,
                         chunk = response.rawResponse.text,
                         voiceClip = response.clip
                     };
@@ -247,7 +250,7 @@ namespace SmartNPC
                 _voice.OnPlayLastChunk.AddListener(onPlayLastChunk);
             }
 
-            SmartNPCMessage newMessage = new SmartNPCMessage { message = message, response = text, behaviors = behaviors };
+            SmartNPCMessage newMessage = new SmartNPCMessage { message = message, response = _currentResponse, behaviors = behaviors };
 
             _messages.Add(newMessage);
 
@@ -269,7 +272,7 @@ namespace SmartNPC
                     else emitTextProgress(response);
                 },
                 OnComplete = (MessageResponse response) => {
-                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = text };
+                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = _currentResponse };
 
                     _messages[_messages.Count - 1] = value;
 
@@ -281,6 +284,7 @@ namespace SmartNPC
                         InvokeOnUpdate(() => {
                             _messageInProgress = false;
                             _speaking = false;
+                            _currentResponse = "";
 
                             OnMessageTextComplete.Invoke(value);
                             OnMessageComplete.Invoke(value);
@@ -295,6 +299,7 @@ namespace SmartNPC
                     InvokeOnUpdate(() => {
                         _messageInProgress = false;
                         _speaking = false;
+                        _currentResponse = "";
 
                         OnMessageException.Invoke(value);
                         OnMessageHistoryChange.Invoke(_messages);
@@ -336,6 +341,11 @@ namespace SmartNPC
         public bool MessageInProgress
         {
             get { return _messageInProgress; }
+        }
+
+        public string CurrentResponse
+        {
+            get { return _currentResponse; }
         }
         
         override public void Dispose()

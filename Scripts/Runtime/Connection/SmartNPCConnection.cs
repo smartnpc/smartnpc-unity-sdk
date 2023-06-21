@@ -21,6 +21,7 @@ namespace SmartNPC
         [Header("Voice")]
         [SerializeField] private bool _voiceEnabled = true;
         [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
+        [SerializeField] private int _voiceMaxDistance = 20;
 
 
         [Header("Behaviors")]
@@ -36,9 +37,16 @@ namespace SmartNPC
         private SocketIOUnity _socket;
         private SmartNPCSpeechRecognition _speechRecognition;
         private OVRLipSync _lipSync;
+
+        private static int totalConnections = 0;
         
         void Awake()
         {
+            if (++totalConnections > 1)
+            {
+                throw new Exception("There should only be 1 SmartNPCConnection");
+            }
+
             if (_keyId == null || _keyId == "" || _publicKey == null || _publicKey == "")
             {
                 throw new Exception("Must specify Key Id and Public Key");
@@ -223,6 +231,11 @@ namespace SmartNPC
         public float VoiceVolume
         {
             get { return _voiceVolume; }
+        }
+
+        public float VoiceMaxDistance
+        {
+            get { return _voiceMaxDistance; }
         }
 
         public bool BehaviorsEnabled
