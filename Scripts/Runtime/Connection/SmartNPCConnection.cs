@@ -143,6 +143,10 @@ namespace SmartNPC
 
             listener = (e) => {
                 StreamResponse streamResponse = e.GetValue<StreamResponse>();
+
+                // belongs to another request
+                if (streamResponse.emitId != options.Data.emitId) return;
+
                 T value = e.GetValue<T>();
 
                 if (streamResponse.status == StreamStatus.Start) {
