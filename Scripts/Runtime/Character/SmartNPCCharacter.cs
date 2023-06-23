@@ -130,7 +130,13 @@ namespace SmartNPC
                EventName = "messagehistory",
                Data = new MessageHistoryData { character = _characterId },
                OnSuccess = (response) => {
-                _messages = response.data;
+                _messages = response.data.ConvertAll<SmartNPCMessage>((RawHistoryMessage rawMessage) => {
+                    return new SmartNPCMessage {
+                        message = rawMessage.message,
+                        response = rawMessage.response,
+                        behaviors = rawMessage.behaviors.ConvertAll<SmartNPCBehavior>((RawBehavior rawBehavior) => SmartNPCBehavior.parse(rawBehavior))
+                    };
+                });
 
                 onComplete();
                },
@@ -187,7 +193,7 @@ namespace SmartNPC
                     value.chunk = response.text;
                 }
                 
-                if (response.behavior != null) _behaviorQueue.Add(response.behavior);
+                if (response.behavior != null) _behaviorQueue.Add(SmartNPCBehavior.parse(response.behavior));
 
                 value.response = _currentResponse;
                 value.behaviors = behaviors;
