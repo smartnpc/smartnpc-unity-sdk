@@ -35,7 +35,7 @@ namespace SmartNPC
 
         private void Init()
         {
-            ApplyAnimations();
+            Task applyAnimationsTask = ApplyAnimations(); // workaround to avoid warning for no await
 
             // workaround
             _consumeHandler = async (SmartNPCBehavior behavior, UnityAction next) => {
@@ -47,22 +47,22 @@ namespace SmartNPC
 
         private async Task ConsumeHandler(SmartNPCBehavior behavior, UnityAction next)
         {
-            if (behavior.type == SmartNPCBehaviorType.Gesture) await TriggerGesture(behavior);
+            if (behavior is SmartNPCGesture) await TriggerGesture(behavior as SmartNPCGesture);
 
             // TODO: expression
 
             next();
         }
 
-        private async Task TriggerGesture(SmartNPCBehavior behavior)
+        private async Task TriggerGesture(SmartNPCGesture gesture)
         {
             for (int i = 0; i < _gestures.Count; i++)
             {
                 SmartNPCGestureAnimation animation = _gestures[i];
 
-                if (animation.gestureName == behavior.name)
+                if (animation.gestureName == gesture.name)
                 {
-                    if (animation.animationClip != null) await TriggerAnimation("SmartNPC-" + behavior.name + "Trigger");
+                    if (animation.animationClip != null) await TriggerAnimation("SmartNPC-" + gesture.name + "Trigger");
                     else if (animation.animationTrigger != null && animation.animationTrigger != "") await TriggerAnimation(animation.animationTrigger);
 
                     break;

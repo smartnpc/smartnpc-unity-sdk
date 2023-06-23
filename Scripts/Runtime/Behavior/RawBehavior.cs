@@ -4,8 +4,9 @@ using System.Collections.Generic;
 namespace SmartNPC
 {
     [Serializable]
-    public class MessageHistoryResponse
+    public class RawBehavior
     {
-        public List<RawHistoryMessage> data;
+        public string type;
+        public List<string> args;
     }
 }
