@@ -100,14 +100,13 @@ namespace SmartNPC
             chunkBufferSize = (int) (collectIntervalSeconds * frequency);
             chunkBuffer = new float[chunkBufferSize];
 
-            _connection = FindObjectOfType<SmartNPCConnection>();
-
-            if (!_connection) throw new Exception("No SmartNPCConnection found");
-
-            _connection.OnReady(Init);
+            SmartNPCConnection.OnInstanceReady(Init);
         }
 
-        private void Init() {
+        private void Init(SmartNPCConnection connection)
+        {
+            _connection = connection;
+
             _connection.On("speech", OnSpeechEvent);
 
             SetReady();
@@ -117,7 +116,7 @@ namespace SmartNPC
         {
             base.Update();
 
-            if (!recording) return;
+            if (!_connection || !recording) return;
 
             if (collectCounter <= 0)
             {

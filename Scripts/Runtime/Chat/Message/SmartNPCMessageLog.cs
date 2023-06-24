@@ -28,15 +28,13 @@ namespace SmartNPC
 
             if (!_textField) throw new Exception("Must specify a TextField");
 
-            _connection = FindObjectOfType<SmartNPCConnection>();
-
-            if (!_connection) throw new Exception("No SmartNPCConnection found");
-
-            _connection.OnReady(Init);
+            SmartNPCConnection.OnInstanceReady(Init);
         }
 
-        private void Init()
+        private void Init(SmartNPCConnection connection)
         {
+            _connection = connection;
+
             if (_character) AddListeners();
         }
 

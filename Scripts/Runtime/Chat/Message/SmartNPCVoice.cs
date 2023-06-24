@@ -25,9 +25,12 @@ namespace SmartNPC
 
         void Awake()
         {
-            _connection = FindObjectOfType<SmartNPCConnection>();
+            SmartNPCConnection.OnInstanceReady(Init);
+        }
 
-            if (!_connection) throw new Exception("No SmartNPCConnection found");
+        private void Init(SmartNPCConnection connection)
+        {
+            _connection = connection;
 
             _audioSource = GetOrAddComponent<AudioSource>();
 

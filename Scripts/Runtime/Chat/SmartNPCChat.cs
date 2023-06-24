@@ -66,15 +66,6 @@ namespace SmartNPC
 
         void Awake()
         {
-            _connection = FindObjectOfType<SmartNPCConnection>();
-
-            if (!_connection) throw new Exception("No SmartNPCConnection found");
-
-            _connection.OnReady(Init);
-        }
-
-        private void Init()
-        {
             InitInput();
 
             if (_inputTextField) _inputTextField.enabled = _textMessageEnabled;
@@ -84,6 +75,13 @@ namespace SmartNPC
             if (_nameTextField) _nameTextField.raycastTarget = false;
 
             SetVisibility(false);
+            
+            SmartNPCConnection.OnInstanceReady(Init);
+        }
+
+        private void Init(SmartNPCConnection connection)
+        {
+            _connection = connection;
 
             if (_character) AddListeners();
         }
@@ -103,9 +101,16 @@ namespace SmartNPC
         {
             base.Update();
 
-            SetPlaceholder();
-            ProcessInput();
-            SetTarget();
+            if (!_connection) return;
+
+            try {
+                SetPlaceholder();
+                ProcessInput();
+                SetTarget();
+            }
+            catch (Exception e) {
+                Debug.LogError(e);
+            }
         }
 
         private void ProcessInput()
