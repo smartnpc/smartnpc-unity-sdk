@@ -94,11 +94,7 @@ namespace SmartNPC
 
         public void InitLipSync()
         {
-            if (_lipSync) return;
-
-            _lipSync = gameObject.GetComponent<OVRLipSync>();
-            
-            if (_lipSync) _lipSync = gameObject.AddComponent<OVRLipSync>();
+            if (!_lipSync) _lipSync = FindOrAddObjectOfType<OVRLipSync>();
         }
 
         public void Emit(string eventName, params object[] data) {
@@ -262,16 +258,11 @@ namespace SmartNPC
 
             _instance = instance;
 
-            try {
             _instance.OnReady(() => {
                 _instanceReadyListeners.ForEach((Action<SmartNPCConnection> action) => action(_instance));
 
                 _instanceReadyListeners.Clear();
             });
-            }
-            catch (Exception e) {
-                Debug.LogError(e);
-            }
         }
     }
 }
