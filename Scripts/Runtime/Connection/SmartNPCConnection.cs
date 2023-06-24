@@ -25,7 +25,7 @@ namespace SmartNPC
 
 
         [Header("Behaviors")]
-        [SerializeField] private bool _behaviorsEnabled = false;
+        [SerializeField] private bool _behaviorsEnabled = true;
 
 
         [Header("Advanced Settings")]
@@ -38,15 +38,11 @@ namespace SmartNPC
         private SmartNPCSpeechRecognition _speechRecognition;
         private OVRLipSync _lipSync;
 
-        private static int totalConnections = 0;
+        private static SmartNPCConnection _instance;
+        private static List<Action<SmartNPCConnection>> _instanceReadyListeners = new List<Action<SmartNPCConnection>>();
         
         void Awake()
         {
-            if (++totalConnections > 1)
-            {
-                throw new Exception("There should only be 1 SmartNPCConnection");
-            }
-
             if (_keyId == null || _keyId == "" || _publicKey == null || _publicKey == "")
             {
                 throw new Exception("Must specify Key Id and Public Key");
@@ -79,6 +75,8 @@ namespace SmartNPC
             };
 
             _socket.Connect();
+
+            SetInstance(this);
         }
         
         public void SetPlayer(string id, string name = "") {
@@ -250,6 +248,30 @@ namespace SmartNPC
         public SmartNPCSpeechRecognition SpeechRecognition
         {
             get { return _speechRecognition; }
+        }
+
+        public static void OnInstanceReady(Action<SmartNPCConnection> callback)
+        {
+            if (_instance && _instance.IsReady) callback(_instance);
+            else _instanceReadyListeners.Add(callback);
+        }
+
+        private static void SetInstance(SmartNPCConnection instance)
+        {
+            if (_instance) throw new Exception("There should only be 1 SmartNPCConnection");
+
+            _instance = instance;
+
+            try {
+            _instance.OnReady(() => {
+                _instanceReadyListeners.ForEach((Action<SmartNPCConnection> action) => action(_instance));
+
+                _instanceReadyListeners.Clear();
+            });
+            }
+            catch (Exception e) {
+                Debug.LogError(e);
+            }
         }
     }
 }

@@ -56,16 +56,29 @@ namespace SmartNPC
         {
             if (_characterId == null || _characterId == "") throw new Exception("Must specify Id");
 
+            SmartNPCConnection.OnInstanceReady(Init);
+        }
+
+        private void Init(SmartNPCConnection connection)
+        {
+            _connection = connection;
+
             _voice = GetOrAddComponent<SmartNPCVoice>();
             _behaviorQueue = GetOrAddComponent<SmartNPCBehaviorQueue>();
 
-            _connection = FindObjectOfType<SmartNPCConnection>();
-            
-            if (!_connection) throw new Exception("No SmartNPCConnection found");
-
-            _connection.OnReady(Init);
-
             if (_skinnedMeshRenderer) InitLipSync();
+
+            Action onComplete = () => {
+                if (_info != null && _messages != null)
+                {
+                    InvokeOnUpdate(() => OnMessageHistoryChange.Invoke(_messages));
+
+                    if (!IsReady) SetReady();
+                }
+            };
+
+            FetchInfo(onComplete);
+            FetchMessageHistory(onComplete);
         }
 
         private void InitLipSync()
@@ -91,21 +104,6 @@ namespace SmartNPC
 
                 if (originalIndex != -1) _lipSyncContextMorphTarget.visemeToBlendTargets[originalIndex] = i;
             }
-        }
-
-        private void Init()
-        {
-            Action onComplete = () => {
-                if (_info != null && _messages != null)
-                {
-                    InvokeOnUpdate(() => OnMessageHistoryChange.Invoke(_messages));
-
-                    if (!IsReady) SetReady();
-                }
-            };
-
-            FetchInfo(onComplete);
-            FetchMessageHistory(onComplete);
         }
 
         private void FetchInfo(Action onComplete)
