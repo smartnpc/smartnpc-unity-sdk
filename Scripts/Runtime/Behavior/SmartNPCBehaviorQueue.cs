@@ -8,7 +8,9 @@ namespace SmartNPC
         private List<SmartNPCBehavior> _queue = new List<SmartNPCBehavior>();
 
         public readonly UnityEvent<SmartNPCBehavior, List<SmartNPCBehavior>> OnAdd = new UnityEvent<SmartNPCBehavior, List<SmartNPCBehavior>>();
-        public readonly UnityEvent<SmartNPCBehavior, UnityAction> OnConsume = new UnityEvent<SmartNPCBehavior, UnityAction>();
+        public readonly UnityEvent<SmartNPCBehavior, UnityAction> OnConsumeBehaviors = new UnityEvent<SmartNPCBehavior, UnityAction>();
+        public readonly UnityEvent<SmartNPCAction, UnityAction> OnConsumeActions = new UnityEvent<SmartNPCAction, UnityAction>();
+        public readonly UnityEvent<SmartNPCGesture, UnityAction> OnConsumeGestures = new UnityEvent<SmartNPCGesture, UnityAction>();
 
         public void Add(SmartNPCBehavior item)
         {
@@ -21,9 +23,9 @@ namespace SmartNPC
             });
         }
 
-        public void Consume(UnityAction<SmartNPCBehavior, UnityAction> handler)
+        public void ConsumeBehaviors(UnityAction<SmartNPCBehavior, UnityAction> handler)
         {
-            OnConsume.AddListener(handler);
+            OnConsumeBehaviors.AddListener(handler);
             
             if (_queue.Count > 0)
             {
@@ -40,9 +42,63 @@ namespace SmartNPC
             }
         }
 
-        public void StopConsuming(UnityAction<SmartNPCBehavior, UnityAction> handler)
+        public void ConsumeActions(UnityAction<SmartNPCAction, UnityAction> handler)
         {
-            OnConsume.RemoveListener(handler);
+            OnConsumeActions.AddListener(handler);
+            
+            if (_queue.Count > 0)
+            {
+                InvokeOnUpdate(() => {
+                    SmartNPCBehavior item = _queue[0];
+
+                    if (item is SmartNPCAction)
+                    {
+                        // invoking just this specific handler on purpose when starting to consume
+                        handler(item as SmartNPCAction, () => {
+                            _queue.Remove(item);
+
+                            Next();
+                        });
+                    }
+                });
+            }
+        }
+
+        public void ConsumeGestures(UnityAction<SmartNPCGesture, UnityAction> handler)
+        {
+            OnConsumeGestures.AddListener(handler);
+            
+            if (_queue.Count > 0)
+            {
+                InvokeOnUpdate(() => {
+                    SmartNPCBehavior item = _queue[0];
+
+                    if (item is SmartNPCGesture)
+                    {
+                        // invoking just this specific handler on purpose when starting to consume
+                        handler(item as SmartNPCGesture, () => {
+                            _queue.Remove(item);
+
+                            Next();
+                        });
+                    }
+                });
+            }
+        }
+
+        public void StopConsumingBehaviors(UnityAction<SmartNPCBehavior, UnityAction> handler)
+        {
+            OnConsumeBehaviors.RemoveListener(handler);
+        }
+
+        public void StopConsumingActions(UnityAction<SmartNPCAction, UnityAction> handler)
+        {
+            OnConsumeActions.RemoveListener(handler);
+        }
+
+        public void StopConsumingGestures(UnityAction<SmartNPCGesture, UnityAction> handler)
+        {
+            OnConsumeGestures.RemoveListener(handler);
         }
 
         private void Next()
@@ -51,11 +107,28 @@ namespace SmartNPC
 
             SmartNPCBehavior item = _queue[0];
             
-            OnConsume.Invoke(item, () => {
+            OnConsumeBehaviors.Invoke(item, () => {
                 _queue.Remove(item);
 
                 Next();
             });
+
+            if (item is SmartNPCAction)
+            {
+                OnConsumeActions.Invoke(item as SmartNPCAction, () => {
+                    _queue.Remove(item);
+
+                    Next();
+                });
+            }
+            else if (item is SmartNPCGesture)
+            {
+                OnConsumeGestures.Invoke(item as SmartNPCGesture, () => {
+                    _queue.Remove(item);
+
+                    Next();
+                });
+            }
         }
 
         override public void Dispose()
@@ -65,7 +138,9 @@ namespace SmartNPC
             _queue.Clear();
 
             OnAdd.RemoveAllListeners();
-            OnConsume.RemoveAllListeners();
+            OnConsumeBehaviors.RemoveAllListeners();
+            OnConsumeActions.RemoveAllListeners();
+            OnConsumeGestures.RemoveAllListeners();
         }
     }
 }

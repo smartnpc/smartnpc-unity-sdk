@@ -19,10 +19,10 @@ namespace SmartNPC
 
 
         [Header("Behaviors")]
+        [SerializeField] private bool _triggerGestures = true;
         [SerializeField] private List<SmartNPCExpressionConfig> _expressions = new List<SmartNPCExpressionConfig>();
-
-        // TODO: gestures?
-
+        [SerializeField] public List<SmartNPCGestureAnimation> _gestures = new List<SmartNPCGestureAnimation>();
+        
         
         private SmartNPCConnection _connection;
         private SmartNPCVoice _voice;
@@ -59,7 +59,7 @@ namespace SmartNPC
             _voice = GetOrAddComponent<SmartNPCVoice>();
             _behaviorQueue = GetOrAddComponent<SmartNPCBehaviorQueue>();
 
-            _animator = GetComponent<Animator>();
+            InitGestures();
 
             if (_skinnedMeshRenderer)
             {
@@ -78,6 +78,23 @@ namespace SmartNPC
 
             FetchInfo(onComplete);
             FetchMessageHistory(onComplete);
+        }
+
+        private void InitGestures()
+        {
+             _animator = GetComponent<Animator>();
+
+            // settting to a var as a workaround to avoid warning for no await
+            Task applyGestureAnimationsTask = GestureAnimations.ApplyGestureAnimations(this, _gestures);
+
+            if (_triggerGestures)
+            {
+                _behaviorQueue.ConsumeGestures(async (SmartNPCGesture gesture, UnityAction next) => {
+                    await TriggerGesture(gesture);
+
+                    next();
+                });
+            }
         }
 
         private void MapBlendShapeIndexes()
@@ -159,6 +176,22 @@ namespace SmartNPC
             ResetExpression();
 
             expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => SetBlendShapeWeight(blendShape.blendShapeName, blendShape.weight));
+        }
+
+        public async Task TriggerGesture(SmartNPCGesture gesture)
+        {
+            for (int i = 0; i < _gestures.Count; i++)
+            {
+                SmartNPCGestureAnimation animation = _gestures[i];
+
+                if (animation.gestureName == gesture.name)
+                {
+                    if (animation.animationClip != null) await TriggerAnimation(GestureAnimations.Prefix + "-" + gesture.name + "Trigger");
+                    else if (animation.animationTrigger != null && animation.animationTrigger != "") await TriggerAnimation(animation.animationTrigger);
+
+                    break;
+                }
+            }
         }
 
         public async Task TriggerAnimation(string name)
