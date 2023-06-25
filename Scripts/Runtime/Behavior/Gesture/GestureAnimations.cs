@@ -9,7 +9,7 @@ namespace SmartNPC
     {
         public static readonly string Prefix = "SmartNPC";
 
-        public static async Task ApplyGestureAnimations(SmartNPCCharacter character, List<SmartNPCGestureAnimation> gestures)
+        public static async Task ApplyGestureAnimations(SmartNPCCharacter character, List<SmartNPCGestureItem> gestures)
         {
             Animator animator = character.GetComponent<Animator>();
 
@@ -98,11 +98,11 @@ namespace SmartNPC
             }
         }
 
-        private static void CreateAnimationStates(AnimatorController animatorController, List<SmartNPCGestureAnimation> gestures)
+        private static void CreateAnimationStates(AnimatorController animatorController, List<SmartNPCGestureItem> gestures)
         {
             for (int i = 0; i < gestures.Count; i++)
             {
-                SmartNPCGestureAnimation item = gestures[i];
+                SmartNPCGestureItem item = gestures[i];
 
                 if (item.gestureName != null && item.gestureName != "" && item.animationClip != null)
                 {

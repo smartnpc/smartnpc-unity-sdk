@@ -6,7 +6,7 @@ namespace SmartNPC
     [Serializable]
     public class SmartNPCBlendShape
     {
-        [SerializeField] public string blendShapeName;
+        [SerializeField] public string name;
         [SerializeField] [Range(0, 1)] public float weight = 0;
     }
 }

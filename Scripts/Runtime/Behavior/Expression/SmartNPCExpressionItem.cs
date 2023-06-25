@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SmartNPC
 {
     [Serializable]
-    public class SmartNPCExpressionConfig
+    public class SmartNPCExpressionItem
     {
         [SerializeField] public string expressionName;
         [SerializeField] public List<SmartNPCBlendShape> blendShapes;
