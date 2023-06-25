@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,12 +9,19 @@ namespace SmartNPC
     public class SmartNPCCharacter : BaseEmitter
     {
         [SerializeField] private string _characterId;
-        
+        [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
+
 
         [Header("OVR Lip Sync")]
-        [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
+        
         [SerializeField] [Range(1, 100)] private int _visemeBlendRange = 1;
         [SerializeField] private SmartNPCVisemes _visemeBlendShapes = new SmartNPCVisemes();
+
+
+        [Header("Behaviors")]
+        [SerializeField] private List<SmartNPCExpressionConfig> _expressions = new List<SmartNPCExpressionConfig>();
+
+        // TODO: gestures?
 
         
         private SmartNPCConnection _connection;
@@ -23,6 +31,8 @@ namespace SmartNPC
         private SmartNPCBehaviorQueue _behaviorQueue;
         private OVRLipSyncContext _lipSyncContext;
         private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
+        private Animator _animator;
+        private Dictionary<string, int> _blendShapeIndexes = new Dictionary<string, int>();
         private string _currentResponse = "";
         private bool _messageInProgress = false; // from message sent until message complete
         private bool _speaking = false; // from message first progress until message complete
@@ -49,7 +59,13 @@ namespace SmartNPC
             _voice = GetOrAddComponent<SmartNPCVoice>();
             _behaviorQueue = GetOrAddComponent<SmartNPCBehaviorQueue>();
 
-            if (_skinnedMeshRenderer) InitLipSync();
+            _animator = GetComponent<Animator>();
+
+            if (_skinnedMeshRenderer)
+            {
+                MapBlendShapeIndexes();
+                InitLipSync();
+            }
 
             Action onComplete = () => {
                 if (_info != null && _messages != null)
@@ -62,6 +78,16 @@ namespace SmartNPC
 
             FetchInfo(onComplete);
             FetchMessageHistory(onComplete);
+        }
+
+        private void MapBlendShapeIndexes()
+        {
+            for (int i = 0; i < _skinnedMeshRenderer.sharedMesh.blendShapeCount; i++)
+            {
+                string blendShapeName = _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i);
+
+                _blendShapeIndexes[blendShapeName] = i;
+            }
         }
 
         private void InitLipSync()
@@ -77,35 +103,77 @@ namespace SmartNPC
             _lipSyncContextMorphTarget.visemeBlendRange = _visemeBlendRange;
 
             SetVisemeToBlendTargets();
-
-            // temp
-            /*int index = GetBlendShapeIndex("jawOpen");
-
-            if (index != -1) _skinnedMeshRenderer.SetBlendShapeWeight(index, 1);*/
         }
 
         private void SetVisemeToBlendTargets()
         {
-            string[] visemes = _visemeBlendShapes.GetBlendShapes();
+            List<string> visemes = _visemeBlendShapes.GetBlendShapes();
 
-            for (int i = 0; i < visemes.Length; i++)
+            for (int i = 0; i < visemes.Count; i++)
             {
-                int blendShapeIndex = GetBlendShapeIndex(visemes[i]);
+                int blendShapeIndex = _blendShapeIndexes[visemes[i]];
 
                 if (blendShapeIndex != -1) _lipSyncContextMorphTarget.visemeToBlendTargets[i] = blendShapeIndex;
             }
         }
 
-        private int GetBlendShapeIndex(string name)
+        public List<string> GetExpressionsBlendShapes()
         {
-            for (int i = 0; i < _skinnedMeshRenderer.sharedMesh.blendShapeCount; i++)
-            {
-                string blendShapeName = _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i);
+            HashSet<string> result = new HashSet<string>();
 
-                if (blendShapeName == name) return i;
+            _expressions.ForEach((SmartNPCExpressionConfig expression) => {
+                expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => result.Add(blendShape.blendShapeName));
+            });
+
+            return new List<string>(result);
+        }
+
+        private void ResetExpression()
+        {
+            if (_skinnedMeshRenderer) GetExpressionsBlendShapes().ForEach((string blendShapeName) => SetBlendShapeWeight(blendShapeName, 0));
+        }
+
+        private void SetBlendShapeWeight(string name, float weight)
+        {
+            if (_skinnedMeshRenderer)
+            {
+                int index = _blendShapeIndexes[name];
+
+                if (index != -1) _skinnedMeshRenderer.SetBlendShapeWeight(index, weight);
+            }
+        }
+
+        public void SetExpression(string name)
+        {
+            if (!_skinnedMeshRenderer) return;
+
+            SmartNPCExpressionConfig expression = _expressions.Find((SmartNPCExpressionConfig expression) => expression.expressionName == name);
+
+            if (expression == null)
+            {
+                Debug.LogWarning("Expression not found: " + name);
+
+                return;
             }
 
-            return -1;
+            ResetExpression();
+
+            expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => SetBlendShapeWeight(blendShape.blendShapeName, blendShape.weight));
+        }
+
+        public async Task TriggerAnimation(string name)
+        {
+            if (_animator)
+            {
+                _animator.SetTrigger(name);
+
+                await WaitUntilAnimationFinished();
+            }
+        }
+
+        public async Task WaitUntilAnimationFinished()
+        {
+            if (_animator) await TaskUtils.WaitUntil(() => _animator.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1.0f);
         }
 
         private void FetchInfo(Action onComplete)
@@ -138,12 +206,32 @@ namespace SmartNPC
                     };
                 });
 
+                if (_connection.BehaviorsEnabled) InvokeOnUpdate(() => SetLastExpression(_messages));
+
                 onComplete();
                },
                OnException = (response) => {
                 throw new Exception("Couldn't get message history");
                }
             });
+        }
+
+        private void SetLastExpression(List<SmartNPCMessage> messages)
+        {
+            if (_messages.Count == 0) return;
+
+            SmartNPCMessage lastMessage = _messages[_messages.Count - 1];
+            List<SmartNPCBehavior> behaviors = lastMessage.behaviors;
+
+            if (behaviors.Count == 0) return;
+
+            SmartNPCBehavior behavior = behaviors.Find((SmartNPCBehavior behavior) => behavior.type == SmartNPCBehaviorType.Expression);
+
+            if (behavior == null) return;
+            
+            SmartNPCExpression expression = behavior as SmartNPCExpression;
+
+            SetExpression(expression.next);
         }
 
         public void ClearMessageHistory()
@@ -167,6 +255,8 @@ namespace SmartNPC
             if (!_connection.IsReady) throw new Exception("Connection isn't ready");
 
             List<SmartNPCBehavior> behaviors = new List<SmartNPCBehavior>();
+
+            SmartNPCExpression expression = null;
 
             _currentResponse = "";
             _messageInProgress = true;
@@ -193,7 +283,18 @@ namespace SmartNPC
                     value.chunk = response.text;
                 }
                 
-                if (response.behavior != null) _behaviorQueue.Add(SmartNPCBehavior.parse(response.behavior));
+                if (response.behavior != null)
+                {
+                    SmartNPCBehavior behavior = SmartNPCBehavior.parse(response.behavior);
+
+                    if (behavior is SmartNPCExpression)
+                    {
+                        expression = behavior as SmartNPCExpression;
+
+                        InvokeOnUpdate(() => SetExpression(expression.current));
+                    }
+                    else _behaviorQueue.Add(behavior);
+                }
 
                 value.response = _currentResponse;
                 value.behaviors = behaviors;
@@ -224,12 +325,14 @@ namespace SmartNPC
                     SmartNPCMessage value = new SmartNPCMessage { message = message, response = _currentResponse };
 
                     InvokeOnUpdate(() => {
-                        OnMessageVoiceComplete.Invoke(value);
-                        OnMessageComplete.Invoke(value);
-
                         _speaking = false;
                         _messageInProgress = false;
                         _currentResponse = "";
+
+                        if (expression != null) SetExpression(expression.next);
+
+                        OnMessageVoiceComplete.Invoke(value);
+                        OnMessageComplete.Invoke(value);
                     });
 
                     _voice.OnVoiceProgress.RemoveListener(emitVoiceProgress);
@@ -278,7 +381,7 @@ namespace SmartNPC
                     else emitTextProgress(response);
                 },
                 OnComplete = (MessageResponse response) => {
-                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = _currentResponse };
+                    SmartNPCMessage value = new SmartNPCMessage { message = message, response = _currentResponse, behaviors = behaviors };
 
                     _messages[_messages.Count - 1] = value;
 
@@ -291,6 +394,8 @@ namespace SmartNPC
                             _messageInProgress = false;
                             _speaking = false;
                             _currentResponse = "";
+
+                            if (expression != null) SetExpression(expression.next);
 
                             OnMessageTextComplete.Invoke(value);
                             OnMessageComplete.Invoke(value);

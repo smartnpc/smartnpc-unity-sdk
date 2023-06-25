@@ -47,11 +47,12 @@ namespace SmartNPC
 
         private async Task ConsumeHandler(SmartNPCBehavior behavior, UnityAction next)
         {
-            if (behavior is SmartNPCGesture) await TriggerGesture(behavior as SmartNPCGesture);
+            if (behavior is SmartNPCGesture)
+            {
+                await TriggerGesture(behavior as SmartNPCGesture);
 
-            // TODO: expression
-
-            next();
+                next();
+            }
         }
 
         private async Task TriggerGesture(SmartNPCGesture gesture)
@@ -62,8 +63,8 @@ namespace SmartNPC
 
                 if (animation.gestureName == gesture.name)
                 {
-                    if (animation.animationClip != null) await TriggerAnimation("SmartNPC-" + gesture.name + "Trigger");
-                    else if (animation.animationTrigger != null && animation.animationTrigger != "") await TriggerAnimation(animation.animationTrigger);
+                    if (animation.animationClip != null) await _character.TriggerAnimation("SmartNPC-" + gesture.name + "Trigger");
+                    else if (animation.animationTrigger != null && animation.animationTrigger != "") await _character.TriggerAnimation(animation.animationTrigger);
 
                     break;
                 }
@@ -197,21 +198,6 @@ namespace SmartNPC
 
             endTransition.name = stateName + "-Transition-End";
             endTransition.hasExitTime = true; // transition once the animation finishes
-        }
-
-        public async Task TriggerAnimation(string name)
-        {
-            _animator.SetTrigger(name);
-
-            await WaitUntilAnimationFinished();
-        }
-
-        public async Task WaitUntilAnimationFinished()
-        {
-            if (_animator)
-            {
-                await TaskUtils.WaitUntil(() => _animator.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1.0f);
-            }
         }
 
         override public void Dispose()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SmartNPC
@@ -21,10 +22,11 @@ namespace SmartNPC
         [SerializeField] public string I = "viseme_I";
         [SerializeField] public string O = "viseme_O";
         [SerializeField] public string U = "viseme_U";
-
-        public string[] GetBlendShapes()
+        
+        public List<string> GetBlendShapes()
         {
-            string[] result = {
+            // order matters
+            return new List<string>() {
                 sil,
                 PP,
                 FF,
@@ -41,8 +43,6 @@ namespace SmartNPC
                 O,
                 U,
             };
-
-            return result;
         }
     }
 }
