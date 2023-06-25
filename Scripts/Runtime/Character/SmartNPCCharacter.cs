@@ -19,6 +19,7 @@ namespace SmartNPC
 
 
         [Header("Behaviors")]
+        [SerializeField] [Range(0, 1)] private float _expressionInterpolation = 0.2f;
         [SerializeField] private bool _triggerGestures = true;
         [SerializeField] private List<SmartNPCExpressionConfig> _expressions = new List<SmartNPCExpressionConfig>();
         [SerializeField] public List<SmartNPCGestureAnimation> _gestures = new List<SmartNPCGestureAnimation>();
@@ -32,7 +33,9 @@ namespace SmartNPC
         private OVRLipSyncContext _lipSyncContext;
         private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
         private Animator _animator;
+        private List<string> _expressionsBlendShapes = new List<string>();
         private Dictionary<string, int> _blendShapeIndexes = new Dictionary<string, int>();
+        private Dictionary<string, float> _blendShapeTargetWeights = new Dictionary<string, float>();
         private string _currentResponse = "";
         private bool _messageInProgress = false; // from message sent until message complete
         private bool _speaking = false; // from message first progress until message complete
@@ -52,6 +55,15 @@ namespace SmartNPC
             SmartNPCConnection.OnInstanceReady(Init);
         }
 
+        override protected void Update()
+        {
+            base.Update();
+
+            if (!_connection) return;
+
+            AnimateExpression();
+        }
+
         private void Init(SmartNPCConnection connection)
         {
             _connection = connection;
@@ -60,6 +72,8 @@ namespace SmartNPC
             _behaviorQueue = GetOrAddComponent<SmartNPCBehaviorQueue>();
 
             InitGestures();
+
+            _expressionsBlendShapes = GetExpressionsBlendShapes();
 
             if (_skinnedMeshRenderer)
             {
@@ -134,7 +148,7 @@ namespace SmartNPC
             }
         }
 
-        public List<string> GetExpressionsBlendShapes()
+        private List<string> GetExpressionsBlendShapes()
         {
             HashSet<string> result = new HashSet<string>();
 
@@ -145,19 +159,24 @@ namespace SmartNPC
             return new List<string>(result);
         }
 
-        private void ResetExpression()
-        {
-            if (_skinnedMeshRenderer) GetExpressionsBlendShapes().ForEach((string blendShapeName) => SetBlendShapeWeight(blendShapeName, 0));
-        }
-
         private void SetBlendShapeWeight(string name, float weight)
         {
-            if (_skinnedMeshRenderer)
-            {
-                int index = _blendShapeIndexes[name];
+            if (!_skinnedMeshRenderer) return;
+            
+            int index = _blendShapeIndexes[name];
 
-                if (index != -1) _skinnedMeshRenderer.SetBlendShapeWeight(index, weight);
-            }
+            if (index != -1) _skinnedMeshRenderer.SetBlendShapeWeight(index, weight);
+        }
+
+        private float GetBlendShapeWeight(string name)
+        {
+            if (!_skinnedMeshRenderer) return 0f;
+            
+            int index = _blendShapeIndexes[name];
+
+            if (index != -1) return _skinnedMeshRenderer.GetBlendShapeWeight(index);
+
+            return 0f;
         }
 
         public void SetExpression(string name)
@@ -173,9 +192,21 @@ namespace SmartNPC
                 return;
             }
 
-            ResetExpression();
+            // reset all expressions blend shape weights to 0
+            _expressionsBlendShapes.ForEach((string blendShapeName) => _blendShapeTargetWeights[blendShapeName] = 0);
 
-            expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => SetBlendShapeWeight(blendShape.blendShapeName, blendShape.weight));
+            // set current expressions blend shape weights
+            expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => _blendShapeTargetWeights[blendShape.blendShapeName] = blendShape.weight);
+        }
+
+        private void AnimateExpression()
+        {
+            foreach (var (name, targetWeight) in _blendShapeTargetWeights)
+            {
+                float newWeight = Mathf.Lerp(GetBlendShapeWeight(name), targetWeight, _expressionInterpolation);
+
+                SetBlendShapeWeight(name, newWeight);
+            }
         }
 
         public async Task TriggerGesture(SmartNPCGesture gesture)
