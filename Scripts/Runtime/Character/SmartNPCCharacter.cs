@@ -13,6 +13,7 @@ namespace SmartNPC
         [Header("OVR Lip Sync")]
         [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
         [SerializeField] [Range(1, 100)] private int _visemeBlendRange = 1;
+        [SerializeField] private SmartNPCVisemes _visemeBlendShapes = new SmartNPCVisemes();
 
         
         private SmartNPCConnection _connection;
@@ -33,24 +34,6 @@ namespace SmartNPC
         public readonly UnityEvent<SmartNPCMessage> OnMessageComplete = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageException = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<List<SmartNPCMessage>> OnMessageHistoryChange = new UnityEvent<List<SmartNPCMessage>>();
-
-        private string[] readyPlayerMeVisemes = {
-            "viseme_sil",
-            "viseme_PP",
-            "viseme_FF",
-            "viseme_TH",
-            "viseme_DD",
-            "viseme_kk",
-            "viseme_CH",
-            "viseme_SS",
-            "viseme_nn",
-            "viseme_RR",
-            "viseme_aa",
-            "viseme_E",
-            "viseme_I",
-            "viseme_O",
-            "viseme_U"
-        };
 
         void Awake()
         {
@@ -93,17 +76,36 @@ namespace SmartNPC
             _lipSyncContextMorphTarget.skinnedMeshRenderer = _skinnedMeshRenderer;
             _lipSyncContextMorphTarget.visemeBlendRange = _visemeBlendRange;
 
-            SetReadyPlayerMeVisemeToBlendTargets();
+            SetVisemeToBlendTargets();
+
+            // temp
+            /*int index = GetBlendShapeIndex("jawOpen");
+
+            if (index != -1) _skinnedMeshRenderer.SetBlendShapeWeight(index, 1);*/
         }
 
-        private void SetReadyPlayerMeVisemeToBlendTargets()
+        private void SetVisemeToBlendTargets()
         {
-            for (int i= 0; i < _skinnedMeshRenderer.sharedMesh.blendShapeCount; i++)
-            {
-                int originalIndex = Array.IndexOf(readyPlayerMeVisemes, _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i));
+            string[] visemes = _visemeBlendShapes.GetBlendShapes();
 
-                if (originalIndex != -1) _lipSyncContextMorphTarget.visemeToBlendTargets[originalIndex] = i;
+            for (int i = 0; i < visemes.Length; i++)
+            {
+                int blendShapeIndex = GetBlendShapeIndex(visemes[i]);
+
+                if (blendShapeIndex != -1) _lipSyncContextMorphTarget.visemeToBlendTargets[i] = blendShapeIndex;
             }
+        }
+
+        private int GetBlendShapeIndex(string name)
+        {
+            for (int i = 0; i < _skinnedMeshRenderer.sharedMesh.blendShapeCount; i++)
+            {
+                string blendShapeName = _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i);
+
+                if (blendShapeName == name) return i;
+            }
+
+            return -1;
         }
 
         private void FetchInfo(Action onComplete)
