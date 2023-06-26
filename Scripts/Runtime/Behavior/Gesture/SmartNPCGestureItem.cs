@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SmartNPC
 {
     [Serializable]
-    public class SmartNPCGestureAnimation
+    public class SmartNPCGestureItem
     {
         [SerializeField] public string gestureName;
         [SerializeField]
