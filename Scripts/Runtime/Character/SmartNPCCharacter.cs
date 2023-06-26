@@ -14,7 +14,6 @@ namespace SmartNPC
         [SerializeField] private SmartNPCExpressionsConfig _expressionsConfig;
         [SerializeField] private SmartNPCGesturesConfig _gesturesConfig;
         
-        
         private SmartNPCConnection _connection;
         private SmartNPCVoice _voice;
         private SmartNPCCharacterInfo _info;
