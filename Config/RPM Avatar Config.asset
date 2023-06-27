@@ -51,8 +51,6 @@ MonoBehaviour:
   - mouthLeft
   - mouthPressLeft
   - mouthPressRight
-  - mouthUpperUpLeft
-  - mouthUpperUpRight
   - mouthFrownLeft
   - mouthFrownRight
   - mouthShrugLower
