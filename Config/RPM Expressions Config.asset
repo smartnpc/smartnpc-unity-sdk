@@ -106,10 +106,6 @@ MonoBehaviour:
       weight: 0.2
     - name: browOuterUpRight
       weight: 0.2
-    - name: mouthUpperUpLeft
-      weight: 0.4
-    - name: mouthUpperUpRight
-      weight: 0.4
     - name: mouthPressLeft
       weight: 0.2
     - name: mouthPressRight
@@ -166,8 +162,6 @@ MonoBehaviour:
     blendShapes:
     - name: mouthSmileLeft
       weight: 0.6
-    - name: eyeBlinkRight
-      weight: 0.3
     - name: browOuterUpLeft
       weight: 0.4
   - expressionName: bored
