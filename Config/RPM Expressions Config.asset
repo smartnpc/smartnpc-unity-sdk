@@ -1,0 +1,392 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa292875fe49cdb4d9a8ebce668552c3, type: 3}
+  m_Name: RPM Expressions Config
+  m_EditorClassIdentifier: 
+  interpolationSpeed: 0.2
+  expressions:
+  - expressionName: neutral
+    blendShapes: []
+  - expressionName: happy
+    blendShapes:
+    - name: mouthSmile
+      weight: 1
+    - name: browInnerUp
+      weight: 0.2
+    - name: browOuterUpLeft
+      weight: 0.3
+    - name: browOuterUpRight
+      weight: 0.3
+  - expressionName: sad
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.5
+    - name: mouthFrownLeft
+      weight: 0.8
+    - name: mouthFrownRight
+      weight: 0.8
+    - name: eyesLookDown
+      weight: 0.4
+  - expressionName: angry
+    blendShapes:
+    - name: browDownLeft
+      weight: 1
+    - name: browDownRight
+      weight: 1
+    - name: mouthFrownLeft
+      weight: 0.8
+    - name: mouthFrownRight
+      weight: 0.8
+  - expressionName: surprised
+    blendShapes:
+    - name: browInnerUp
+      weight: 1
+    - name: browOuterUpLeft
+      weight: 1
+    - name: browOuterUpRight
+      weight: 1
+    - name: mouthOpen
+      weight: 0.6
+    - name: eyeWideLeft
+      weight: 0.8
+    - name: eyeWideRight
+      weight: 0.8
+  - expressionName: disgusted
+    blendShapes:
+    - name: mouthFrownLeft
+      weight: 1
+    - name: mouthFrownRight
+      weight: 1
+    - name: noseSneerLeft
+      weight: 0.8
+    - name: noseSneerRight
+      weight: 0.8
+  - expressionName: confused
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.6
+    - name: browOuterUpLeft
+      weight: 0.3
+    - name: browOuterUpRight
+      weight: 0.3
+    - name: eyeLookInLeft
+      weight: 0.4
+    - name: eyeLookOutRight
+      weight: 0.4
+    - name: mouthFrownLeft
+      weight: 0.2
+    - name: mouthFrownRight
+      weight: 0.2
+    - name: mouthPressLeft
+      weight: 0.5
+    - name: mouthPressRight
+      weight: 0.5
+    - name: mouthShrugLower
+      weight: 0.3
+  - expressionName: amused
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.8
+    - name: eyeSquintLeft
+      weight: 0.6
+    - name: eyeSquintRight
+      weight: 0.6
+    - name: cheekPuff
+      weight: 0.3
+    - name: browOuterUpLeft
+      weight: 0.2
+    - name: browOuterUpRight
+      weight: 0.2
+    - name: mouthUpperUpLeft
+      weight: 0.4
+    - name: mouthUpperUpRight
+      weight: 0.4
+    - name: mouthPressLeft
+      weight: 0.2
+    - name: mouthPressRight
+      weight: 0.2
+  - expressionName: anxious
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.7
+    - name: eyeLookInLeft
+      weight: 0.5
+    - name: eyeLookInRight
+      weight: 0.5
+    - name: mouthFrownLeft
+      weight: 0.5
+    - name: mouthFrownRight
+      weight: 0.5
+  - expressionName: determined
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.8
+    - name: browDownRight
+      weight: 0.8
+    - name: mouthPressLeft
+      weight: 0.4
+    - name: mouthPressRight
+      weight: 0.4
+    - name: jawForward
+      weight: 0.6
+  - expressionName: relieved
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.6
+    - name: browInnerUp
+      weight: 0.3
+    - name: eyesLookUp
+      weight: 0.4
+  - expressionName: scared
+    blendShapes:
+    - name: browInnerUp
+      weight: 1
+    - name: eyesLookUp
+      weight: 0.6
+  - expressionName: suspicious
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.5
+    - name: browDownRight
+      weight: 0.5
+    - name: eyeSquintLeft
+      weight: 0.4
+    - name: eyeSquintRight
+      weight: 0.4
+  - expressionName: flirty
+    blendShapes:
+    - name: mouthSmileLeft
+      weight: 0.6
+    - name: eyeBlinkRight
+      weight: 0.3
+    - name: browOuterUpLeft
+      weight: 0.4
+  - expressionName: bored
+    blendShapes:
+    - name: mouthFrownLeft
+      weight: 0.3
+    - name: mouthFrownRight
+      weight: 0.3
+    - name: eyesLookDown
+      weight: 0.4
+  - expressionName: sleepy
+    blendShapes:
+    - name: eyesClosed
+      weight: 0.5
+  - expressionName: focused
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.5
+    - name: browDownRight
+      weight: 0.5
+    - name: eyeSquintLeft
+      weight: 0.3
+    - name: eyeSquintRight
+      weight: 0.3
+  - expressionName: impressed
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.5
+    - name: eyeWideLeft
+      weight: 0.3
+    - name: eyeWideRight
+      weight: 0.3
+  - expressionName: cocky
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.5
+    - name: browOuterUpRight
+      weight: 0.5
+    - name: eyeLookUpRight
+      weight: 0.4
+  - expressionName: injured
+    blendShapes:
+    - name: mouthFrownLeft
+      weight: 0.7
+    - name: mouthFrownRight
+      weight: 0.7
+    - name: browInnerUp
+      weight: 0.5
+    - name: eyesClosed
+      weight: 0.4
+  - expressionName: exhausted
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.5
+    - name: browDownRight
+      weight: 0.5
+    - name: eyesLookDown
+      weight: 0.3
+  - expressionName: ecstatic
+    blendShapes:
+    - name: mouthSmile
+      weight: 1
+    - name: eyeWideLeft
+      weight: 0.7
+    - name: eyeWideRight
+      weight: 0.7
+    - name: browOuterUpLeft
+      weight: 0.6
+    - name: browOuterUpRight
+      weight: 0.6
+  - expressionName: desperate
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.7
+    - name: mouthFrownLeft
+      weight: 0.8
+    - name: mouthFrownRight
+      weight: 0.8
+    - name: eyeLookUpLeft
+      weight: 0.4
+    - name: eyeLookUpRight
+      weight: 0.4
+  - expressionName: triumphant
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.8
+    - name: browOuterUpLeft
+      weight: 0.7
+    - name: browOuterUpRight
+      weight: 0.7
+    - name: eyesLookUp
+      weight: 0.6
+  - expressionName: defensive
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.6
+    - name: browDownRight
+      weight: 0.6
+    - name: mouthPressLeft
+      weight: 0.5
+    - name: mouthPressRight
+      weight: 0.5
+  - expressionName: intimidating
+    blendShapes:
+    - name: browDownLeft
+      weight: 1
+    - name: browDownRight
+      weight: 1
+    - name: jawForward
+      weight: 0.7
+  - expressionName: inquisitive
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.6
+    - name: eyeLookUpLeft
+      weight: 0.4
+    - name: eyeLookUpRight
+      weight: 0.4
+    - name: mouthLeft
+      weight: 0.3
+  - expressionName: shocked
+    blendShapes:
+    - name: browInnerUp
+      weight: 1
+    - name: eyeWideLeft
+      weight: 1
+    - name: eyeWideRight
+      weight: 1
+  - expressionName: worried
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.7
+    - name: mouthFrownLeft
+      weight: 0.6
+    - name: mouthFrownRight
+      weight: 0.6
+  - expressionName: indifferent
+    blendShapes:
+    - name: mouthPressLeft
+      weight: 0.3
+    - name: mouthPressRight
+      weight: 0.3
+  - expressionName: nervous
+    blendShapes:
+    - name: eyeLookInLeft
+      weight: 0.4
+    - name: eyeLookInRight
+      weight: 0.4
+    - name: mouthFrownLeft
+      weight: 0.4
+    - name: mouthFrownRight
+      weight: 0.4
+  - expressionName: aggravated
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.8
+    - name: browDownRight
+      weight: 0.8
+    - name: mouthFrownLeft
+      weight: 0.5
+    - name: mouthFrownRight
+      weight: 0.5
+  - expressionName: curious
+    blendShapes:
+    - name: browInnerUp
+      weight: 0.5
+    - name: eyeLookUpLeft
+      weight: 0.4
+    - name: eyeLookUpRight
+      weight: 0.4
+  - expressionName: compassionate
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.6
+    - name: browInnerUp
+      weight: 0.4
+    - name: eyesLookUp
+      weight: 0.3
+  - expressionName: distrustful
+    blendShapes:
+    - name: browDownLeft
+      weight: 0.5
+    - name: browDownRight
+      weight: 0.5
+    - name: mouthFrownLeft
+      weight: 0.6
+    - name: mouthFrownRight
+      weight: 0.6
+  - expressionName: heartbroken
+    blendShapes:
+    - name: mouthFrownLeft
+      weight: 0.8
+    - name: mouthFrownRight
+      weight: 0.8
+    - name: browInnerUp
+      weight: 0.4
+    - name: eyesLookDown
+      weight: 0.4
+  - expressionName: inspired
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.7
+    - name: browInnerUp
+      weight: 0.5
+    - name: eyesLookUp
+      weight: 0.6
+  - expressionName: grateful
+    blendShapes:
+    - name: mouthSmile
+      weight: 0.8
+    - name: eyesLookUp
+      weight: 0.4
+    - name: browInnerUp
+      weight: 0.5
+  - expressionName: teasing
+    blendShapes:
+    - name: mouthSmileLeft
+      weight: 0.7
+    - name: eyeSquintRight
+      weight: 0.5
+    - name: browOuterUpLeft
+      weight: 0.4

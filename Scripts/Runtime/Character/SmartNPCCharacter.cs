@@ -22,12 +22,24 @@ namespace SmartNPC
         private OVRLipSyncContext _lipSyncContext;
         private OVRLipSyncContextMorphTarget _lipSyncContextMorphTarget;
         private Animator _animator;
+        private string _expression;
         private List<string> _expressionsBlendShapes = new List<string>();
         private Dictionary<string, int> _blendShapeIndexes = new Dictionary<string, int>();
+        private List<string> _blendShapeNames = new List<string>();
         private Dictionary<string, float> _blendShapeTargetWeights = new Dictionary<string, float>();
         private string _currentResponse = "";
         private bool _messageInProgress = false; // from message sent until message complete
         private bool _speaking = false; // from message first progress until message complete
+
+        private readonly List<string> MiscBlendShapes = new List<string>() {
+            "mouthOpen",
+            "mouthSmile",
+            "eyesClosed",
+            "eyesLookUp",
+            "eyesLookDown",
+            "eyeBlinkLeft",
+            "eyeBlinkRight"
+        };
 
         public readonly UnityEvent<SmartNPCMessage> OnMessageStart = new UnityEvent<SmartNPCMessage>();
         public readonly UnityEvent<SmartNPCMessage> OnMessageProgress = new UnityEvent<SmartNPCMessage>();
@@ -106,6 +118,8 @@ namespace SmartNPC
                 string blendShapeName = _skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i);
 
                 _blendShapeIndexes[blendShapeName] = i;
+
+                _blendShapeNames.Add(blendShapeName);
             }
         }
 
@@ -156,6 +170,13 @@ namespace SmartNPC
         private void SetBlendShapeWeight(string name, float weight)
         {
             if (!_skinnedMeshRenderer) return;
+
+            if (!_blendShapeIndexes.ContainsKey(name))
+            {
+                Debug.LogWarning("Blend shape not found: " + name);
+
+                return;
+            }
             
             int index = _blendShapeIndexes[name];
 
@@ -165,6 +186,13 @@ namespace SmartNPC
         private float GetBlendShapeWeight(string name)
         {
             if (!_skinnedMeshRenderer) return 0f;
+
+            if (!_blendShapeIndexes.ContainsKey(name))
+            {
+                Debug.LogWarning("Blend shape not found: " + name);
+
+                return 0f;
+            }
             
             int index = _blendShapeIndexes[name];
 
@@ -173,11 +201,42 @@ namespace SmartNPC
             return 0f;
         }
 
+        private int FindExpressionIndex(string name)
+        {
+            return _expressionsConfig.expressions.FindIndex((SmartNPCExpressionItem expression) => expression.expressionName == name);
+        }
+
+        private SmartNPCExpressionItem FindExpressionItem(string name)
+        {
+            int index = FindExpressionIndex(name);
+
+            return index != -1 ? _expressionsConfig.expressions[index] : null;
+        }
+
+        public List<string> GetUsedBlendShapes()
+        {
+            List<string> result = new List<string>(MiscBlendShapes);
+
+            if (_expressionsConfig) result.AddRange( GetExpressionsBlendShapes() );
+            if (_lipSyncConfig) result.AddRange( _lipSyncConfig.visemeBlendShapes.GetBlendShapes() );
+
+            return result;
+        }
+
+        public List<string> GetUnusedBlendShapes()
+        {
+            List<string> result = new List<string>(_blendShapeNames);
+
+            GetUsedBlendShapes().ForEach((string name) => result.Remove(name));
+
+            return result;
+        }
+
         public void SetExpression(string name)
         {
             if (!_expressionsConfig || !_skinnedMeshRenderer) return;
 
-            SmartNPCExpressionItem expression = _expressionsConfig.expressions.Find((SmartNPCExpressionItem expression) => expression.expressionName == name);
+            SmartNPCExpressionItem expression = FindExpressionItem(name);
 
             if (expression == null)
             {
@@ -186,11 +245,34 @@ namespace SmartNPC
                 return;
             }
 
+            _expression = name;
+
             // reset all expressions blend shape weights to 0
             _expressionsBlendShapes.ForEach((string blendShapeName) => _blendShapeTargetWeights[blendShapeName] = 0);
 
             // set current expressions blend shape weights
             expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => _blendShapeTargetWeights[blendShape.name] = blendShape.weight);
+        }
+
+        public void TestNextExpression()
+        {
+            if (!_expressionsConfig || !_skinnedMeshRenderer) return;
+            
+            int index = 0;
+
+            if (_expression != null)
+            {
+                index = FindExpressionIndex(_expression);
+
+                if (index < _expressionsConfig.expressions.Count - 1) index++;
+                else index = 0;
+            }
+
+            string name = _expressionsConfig.expressions[index].expressionName;
+
+            Debug.Log("Expression: " + name);
+
+            SetExpression(name);
         }
 
         private void AnimateExpression()
@@ -520,6 +602,11 @@ namespace SmartNPC
         {
             get { return _currentResponse; }
         }
+
+        public string Expression
+        {
+            get { return _expression; }
+        }
         
         override public void Dispose()
         {
@@ -527,6 +614,11 @@ namespace SmartNPC
             
             _messages.Clear();
             _behaviorQueue.Dispose();
+
+            _expressionsBlendShapes.Clear();
+            _blendShapeIndexes.Clear();
+            _blendShapeNames.Clear();
+            _blendShapeTargetWeights.Clear();
 
             OnMessageStart.RemoveAllListeners();
             OnMessageProgress.RemoveAllListeners();
