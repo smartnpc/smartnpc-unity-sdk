@@ -404,8 +404,8 @@ namespace SmartNPC
                 GameObject target = hit.transform.gameObject;
 
                 SmartNPCCharacter character = target.GetComponent<SmartNPCCharacter>();
-                
-                return character;
+
+                if (character && character.IsReady) return character;
             }
 
             return null;
