@@ -115,9 +115,9 @@ MonoBehaviour:
     - name: browInnerUp
       weight: 0.7
     - name: eyeLookInLeft
-      weight: 0.5
+      weight: 0.2
     - name: eyeLookInRight
-      weight: 0.5
+      weight: 0.2
     - name: mouthFrownLeft
       weight: 0.5
     - name: mouthFrownRight
