@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2322262d19383d4d8dd105d8a293b43, type: 3}
   m_Name: Gestures Config Demo
   m_EditorClassIdentifier: 
-  triggerGestures: 1
+  TriggerGestures: 1
   Gestures:
   - gestureName: dance
     animationTrigger: DanceTrigger
