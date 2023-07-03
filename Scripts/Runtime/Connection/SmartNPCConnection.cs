@@ -8,62 +8,45 @@ namespace SmartNPC
 {
     public class SmartNPCConnection : BaseEmitter
     {
-        [Header("Credentials")]
-        [SerializeField] private string _keyId;
-        [SerializeField] private string _publicKey;
-
-
-        [Header("Player")]
-        [SerializeField] private string _playerId;
-        [SerializeField] private string _playerName;
-
-
-        [Header("Voice")]
-        [SerializeField] private bool _voiceEnabled = true;
-        [SerializeField] [Range(0.0f, 1.0f)] private float _voiceVolume = 1;
-        [SerializeField] private int _voiceMaxDistance = 20;
-
-
-        [Header("Behaviors")]
-        [SerializeField] private bool _behaviorsEnabled = true;
-
-
-        [Header("Advanced Settings")]
-        [SerializeField] private string _host;
-
-
-        private const string DEFAULT_HOST = "wss://api.smartnpc.ai";
         private Dictionary<string, List<Action<SocketIOResponse>>> socketListeners = new Dictionary<string, List<Action<SocketIOResponse>>>();
         private SocketIOUnity _socket;
         private SmartNPCSpeechRecognition _speechRecognition;
         private OVRLipSync _lipSync;
+
+        private SmartNPCConnectionConfig _config;
+        private string _playerId;
+        private string _playerName;
 
         private static SmartNPCConnection _instance;
         private static List<Action<SmartNPCConnection>> _instanceReadyListeners = new List<Action<SmartNPCConnection>>();
         
         void Awake()
         {
-            if (_keyId == null || _keyId == "" || _publicKey == null || _publicKey == "")
+            _config = Resources.Load<SmartNPCConnectionConfig>("SmartNPC Connection Config");
+
+            if (!_config)
             {
-                throw new Exception("Must specify Key Id and Public Key");
+                throw new Exception("Must configure SmartNPC. Go to SmartNPC -> Configuration");
+            }
+
+            if (!_config.APIKey.Validate())
+            {
+                throw new Exception("Must specify Key Id and Public Key. Go to SmartNPC -> Configuration");
             }
 
             _speechRecognition = FindOrAddObjectOfType<SmartNPCSpeechRecognition>();
 
-            var uri = new Uri(_host != "" ? _host : DEFAULT_HOST);
+            var uri = new Uri( _config.Advanced.GetHost() );
 
             _socket = new SocketIOUnity(uri, new SocketIOOptions {
                 Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-                Auth = new {
-                    keyId = _keyId,
-                    publicKey = _publicKey
-                }
+                Auth = _config.APIKey.GetData()
             });
 
             _socket.JsonSerializer = new NewtonsoftJsonSerializer();
 
             _socket.On(SocketEvent.Auth, (value) => {
-                if (_playerId != "") SetPlayer(_playerId, _playerName);
+                if (_config.Player.Id != "") SetPlayer(_config.Player.Id, _config.Player.Name);
             });
 
             _socket.On(SocketEvent.Ready, (value) => {
@@ -221,24 +204,9 @@ namespace SmartNPC
             get { return _playerName; }
         }
 
-        public bool VoiceEnabled
+        public SmartNPCConnectionConfig Config
         {
-            get { return _voiceEnabled; }
-        }
-
-        public float VoiceVolume
-        {
-            get { return _voiceVolume; }
-        }
-
-        public float VoiceMaxDistance
-        {
-            get { return _voiceMaxDistance; }
-        }
-
-        public bool BehaviorsEnabled
-        {
-            get { return _behaviorsEnabled; }
+            get { return _config; }
         }
 
         public SmartNPCSpeechRecognition SpeechRecognition

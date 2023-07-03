@@ -36,7 +36,7 @@ namespace SmartNPC
 
             _audioSource.spatialBlend = 1; // 3d
             _audioSource.rolloffMode = AudioRolloffMode.Linear;
-            _audioSource.maxDistance = _connection.VoiceMaxDistance;
+            _audioSource.maxDistance = _connection.Config.Voice.MaxDistance;
         }
 
         void Update()
@@ -128,12 +128,12 @@ namespace SmartNPC
 
         public bool Enabled
         {
-          get { return _connection.VoiceEnabled; }
+          get { return _connection.Config.Voice.Enabled; }
         }
 
         public float Volume
         {
-          get { return _connection.VoiceVolume; }
+          get { return _connection.Config.Voice.Volume; }
         }
 
         public bool Playing
