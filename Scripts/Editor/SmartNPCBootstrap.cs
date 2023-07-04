@@ -12,7 +12,7 @@ namespace SmartNPC
         public static readonly string PackagePath = "Packages/ai.smartnpc.client";
         public static readonly string ConfigRelativePath = "Resources/SmartNPC Connection Config.asset";
         public static readonly string LogoRelativePath = "Images/logo.png";
-        public static readonly string SceneRelativePath = "Scene/SmartNPC Demo";
+        public static readonly string SceneRelativePath = "Scenes/SmartNPC Demo";
 
         static SmartNPCBootstrap()
         {
@@ -33,7 +33,11 @@ namespace SmartNPC
         {
             string path = SmartNPCBootstrap.AssetsPath + "/" + ConfigRelativePath;
 
-            if (!AssetDatabase.LoadAssetAtPath<SmartNPCConnectionConfig>(path)) ScriptableObject.CreateInstance<SmartNPCConnectionConfig>();
+            if (!AssetDatabase.LoadAssetAtPath<SmartNPCConnectionConfig>(path)) {
+                SmartNPCConnectionConfig config = ScriptableObject.CreateInstance<SmartNPCConnectionConfig>();
+
+                AssetDatabase.CreateAsset(config, path);
+            }
         }
 
         private static void CopyLogo()
