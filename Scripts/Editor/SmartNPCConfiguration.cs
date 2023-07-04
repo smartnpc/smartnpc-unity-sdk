@@ -174,7 +174,7 @@ namespace SmartNPC
             TextField playerName = GetTextField("Name", () => config.Player.Name, (string value) => config.Player.Name = value);
 
             result.Add( GetHeader("Player", 5) );
-            result.Add( GetInstructions("Should reflect the data you have on the player. You can also set this at runtime instead.") );
+            result.Add( GetInstructions("It should reflect the data you have on the player. You can also set this at runtime instead.") );
             result.Add(playerId);
             result.Add(playerName);
 
