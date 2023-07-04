@@ -63,7 +63,7 @@ namespace SmartNPC
 
             if (!logo.image)
             {
-                AssetDatabase.CopyAsset("Packages/SmartNPC/Images/logo.png", path);
+                AssetDatabase.CopyAsset("Packages/ai.smartnpc.client/Images/logo.png", path);
 
                 logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
             }
