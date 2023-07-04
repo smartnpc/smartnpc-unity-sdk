@@ -57,6 +57,9 @@ namespace SmartNPC
         {
             string path = "Assets/SmartNPC/Images/logo.png";
 
+            if (!AssetDatabase.IsValidFolder("Assets/SmartNPC")) AssetDatabase.CreateFolder("Assets", "SmartNPC");
+            if (!AssetDatabase.IsValidFolder("Assets/SmartNPC/Images")) AssetDatabase.CreateFolder("Assets/SmartNPC", "Images");
+
             Image logo = new Image();
 
             logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
