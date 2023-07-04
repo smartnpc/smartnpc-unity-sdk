@@ -12,7 +12,7 @@ namespace SmartNPC
         public static readonly string PackagePath = "Packages/ai.smartnpc.client";
         public static readonly string ConfigRelativePath = "Resources/SmartNPC Connection Config.asset";
         public static readonly string LogoRelativePath = "Images/logo.png";
-        public static readonly string SceneRelativePath = "Scenes/SmartNPC Demo";
+        public static readonly string SceneRelativePath = "Scenes/SmartNPC Demo.unity";
 
         static SmartNPCBootstrap()
         {
