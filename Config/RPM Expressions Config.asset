@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa292875fe49cdb4d9a8ebce668552c3, type: 3}
   m_Name: RPM Expressions Config
   m_EditorClassIdentifier: 
-  interpolationSpeed: 0.2
-  expressions:
+  InterpolationSpeed: 0.2
+  Expressions:
   - expressionName: neutral
     blendShapes: []
   - expressionName: happy

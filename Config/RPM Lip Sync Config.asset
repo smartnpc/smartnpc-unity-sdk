@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9060f490facef3c4eb6450bc16215d09, type: 3}
   m_Name: RPM Lip Sync Config
   m_EditorClassIdentifier: 
-  visemeBlendRange: 1
-  visemeBlendShapes:
+  VisemeBlendRange: 1
+  VisemeBlendShapes:
     sil: viseme_sil
     PP: viseme_PP
     FF: viseme_FF

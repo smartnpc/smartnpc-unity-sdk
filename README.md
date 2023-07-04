@@ -9,3 +9,7 @@ Requires a **SmartNPC API key**. Create a SmartNPC account at https://smartnpc.a
 In Unity: Window -> Package Manager -> + -> Add package from git URL...
 
 URL: https://github.com/smartnpc/smartnpc-unity-sdk
+
+## Documentation
+
+https://docs.smartnpc.ai/unity-sdk/installation

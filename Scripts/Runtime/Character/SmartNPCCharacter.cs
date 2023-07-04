@@ -97,9 +97,9 @@ namespace SmartNPC
              _animator = GetComponent<Animator>();
 
             // settting to a var as a workaround to avoid warning for no await
-            Task applyGestureAnimationsTask = GestureAnimations.ApplyGestureAnimations(this, _gesturesConfig.gestures);
+            Task applyGestureAnimationsTask = GestureAnimations.ApplyGestureAnimations(this, _gesturesConfig.Gestures);
 
-            if (_gesturesConfig.triggerGestures)
+            if (_gesturesConfig.TriggerGestures)
             {
                 _behaviorQueue.ConsumeGestures(async (SmartNPCGesture gesture, UnityAction next) => {
                     await TriggerGesture(gesture);
@@ -135,7 +135,7 @@ namespace SmartNPC
             _lipSyncContext.audioLoopback = true;
 
             _lipSyncContextMorphTarget.skinnedMeshRenderer = _skinnedMeshRenderer;
-            _lipSyncContextMorphTarget.visemeBlendRange = _lipSyncConfig.visemeBlendRange;
+            _lipSyncContextMorphTarget.visemeBlendRange = _lipSyncConfig.VisemeBlendRange;
 
             SetVisemeToBlendTargets();
         }
@@ -144,7 +144,7 @@ namespace SmartNPC
         {
             if (!_lipSyncConfig) return;
 
-            List<string> visemes = _lipSyncConfig.visemeBlendShapes.GetBlendShapes();
+            List<string> visemes = _lipSyncConfig.VisemeBlendShapes.GetBlendShapes();
 
             for (int i = 0; i < visemes.Count; i++)
             {
@@ -160,7 +160,7 @@ namespace SmartNPC
 
             HashSet<string> result = new HashSet<string>();
 
-            _expressionsConfig.expressions.ForEach((SmartNPCExpressionItem expression) => {
+            _expressionsConfig.Expressions.ForEach((SmartNPCExpressionItem expression) => {
                 expression.blendShapes.ForEach((SmartNPCBlendShape blendShape) => result.Add(blendShape.name));
             });
 
@@ -203,14 +203,14 @@ namespace SmartNPC
 
         private int FindExpressionIndex(string name)
         {
-            return _expressionsConfig.expressions.FindIndex((SmartNPCExpressionItem expression) => expression.expressionName == name);
+            return _expressionsConfig.Expressions.FindIndex((SmartNPCExpressionItem expression) => expression.expressionName == name);
         }
 
         private SmartNPCExpressionItem FindExpressionItem(string name)
         {
             int index = FindExpressionIndex(name);
 
-            return index != -1 ? _expressionsConfig.expressions[index] : null;
+            return index != -1 ? _expressionsConfig.Expressions[index] : null;
         }
 
         public List<string> GetUsedBlendShapes()
@@ -218,7 +218,7 @@ namespace SmartNPC
             List<string> result = new List<string>(MiscBlendShapes);
 
             if (_expressionsConfig) result.AddRange( GetExpressionsBlendShapes() );
-            if (_lipSyncConfig) result.AddRange( _lipSyncConfig.visemeBlendShapes.GetBlendShapes() );
+            if (_lipSyncConfig) result.AddRange( _lipSyncConfig.VisemeBlendShapes.GetBlendShapes() );
 
             return result;
         }
@@ -264,11 +264,11 @@ namespace SmartNPC
             {
                 index = FindExpressionIndex(_expression);
 
-                if (index < _expressionsConfig.expressions.Count - 1) index++;
+                if (index < _expressionsConfig.Expressions.Count - 1) index++;
                 else index = 0;
             }
 
-            string name = _expressionsConfig.expressions[index].expressionName;
+            string name = _expressionsConfig.Expressions[index].expressionName;
 
             Debug.Log("Expression: " + name);
 
@@ -281,7 +281,7 @@ namespace SmartNPC
 
             foreach (var (name, targetWeight) in _blendShapeTargetWeights)
             {
-                float newWeight = Mathf.Lerp(GetBlendShapeWeight(name), targetWeight, _expressionsConfig.interpolationSpeed);
+                float newWeight = Mathf.Lerp(GetBlendShapeWeight(name), targetWeight, _expressionsConfig.InterpolationSpeed);
 
                 SetBlendShapeWeight(name, newWeight);
             }
@@ -291,9 +291,9 @@ namespace SmartNPC
         {
             if (!_gesturesConfig) return;
 
-            for (int i = 0; i < _gesturesConfig.gestures.Count; i++)
+            for (int i = 0; i < _gesturesConfig.Gestures.Count; i++)
             {
-                SmartNPCGestureItem item = _gesturesConfig.gestures[i];
+                SmartNPCGestureItem item = _gesturesConfig.Gestures[i];
 
                 if (item.gestureName == gesture.name)
                 {
@@ -350,7 +350,7 @@ namespace SmartNPC
                     };
                 });
 
-                if (_connection.BehaviorsEnabled) InvokeOnUpdate(() => SetLastExpression(_messages));
+                if (_connection.Config.Behaviors.Enabled) InvokeOnUpdate(() => SetLastExpression(_messages));
 
                 onComplete();
                },
@@ -518,7 +518,7 @@ namespace SmartNPC
                     character = _characterId,
                     message = message,
                     voice = _voice.Enabled,
-                    behaviors = _connection.BehaviorsEnabled
+                    behaviors = _connection.Config.Behaviors.Enabled
                 },
                 OnProgress = (MessageResponse response) => {
                     if (_voice.Enabled && response.voice != null) InvokeOnUpdate(async () => await _voice.Add(response));
