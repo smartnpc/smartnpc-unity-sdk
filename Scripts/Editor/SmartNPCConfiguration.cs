@@ -12,7 +12,7 @@ namespace SmartNPC
     public class SmartNPCConfiguration : EditorWindow
     {
         [MenuItem("SmartNPC/Configuration", priority = 1)]
-        public static void SetupSmartNPCAPIKey()
+        public static void OpenConfiguration()
         {
             SmartNPCConfiguration window = GetWindow<SmartNPCConfiguration>();
             
@@ -26,50 +26,17 @@ namespace SmartNPC
         private delegate void SetHandler<T>(T value);
 
         private SmartNPCConnectionConfig config;
-
-        private SmartNPCConnectionConfig GetOrCreateConfig()
-        {
-            string path = "Assets/SmartNPC/Resources/SmartNPC Connection Config.asset";
-
-            SmartNPCConnectionConfig result = AssetDatabase.LoadAssetAtPath<SmartNPCConnectionConfig>(path);
-
-            if (!result)
-            {
-                result = CreateInstance<SmartNPCConnectionConfig>();
-
-                if (!AssetDatabase.IsValidFolder("Assets/SmartNPC")) AssetDatabase.CreateFolder("Assets", "SmartNPC");
-                if (!AssetDatabase.IsValidFolder("Assets/SmartNPC/Resources")) AssetDatabase.CreateFolder("Assets/SmartNPC", "Resources");
-
-                AssetDatabase.CreateAsset(result, path);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-            }
-
-            return result;
-        }
-
+        
         public void OnEnable()
         {
-            config = GetOrCreateConfig();
+            config = AssetDatabase.LoadAssetAtPath<SmartNPCConnectionConfig>(SmartNPCBootstrap.AssetsPath + "/" + SmartNPCBootstrap.ConfigRelativePath);
         }
 
-        private Image GetOrCreateLogo()
+        private Image GetLogo()
         {
-            string path = "Assets/SmartNPC/Images/logo.png";
-
-            if (!AssetDatabase.IsValidFolder("Assets/SmartNPC")) AssetDatabase.CreateFolder("Assets", "SmartNPC");
-            if (!AssetDatabase.IsValidFolder("Assets/SmartNPC/Images")) AssetDatabase.CreateFolder("Assets/SmartNPC", "Images");
-
             Image logo = new Image();
 
-            logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
-
-            if (!logo.image)
-            {
-                AssetDatabase.CopyAsset("Packages/ai.smartnpc.client/Images/logo.png", path);
-
-                logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
-            }
+            logo.image = AssetDatabase.LoadAssetAtPath<Texture>(SmartNPCBootstrap.AssetsPath + "/" + SmartNPCBootstrap.LogoRelativePath);
 
             logo.style.paddingBottom = 10;
             logo.style.paddingTop = 20;
@@ -90,7 +57,7 @@ namespace SmartNPC
             result.style.paddingBottom = 10;
             result.style.marginBottom = 10;
 
-            result.Add( GetOrCreateLogo() );
+            result.Add( GetLogo() );
 
             return result;
         }
