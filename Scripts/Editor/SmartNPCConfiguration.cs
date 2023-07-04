@@ -53,11 +53,20 @@ namespace SmartNPC
             config = GetOrCreateConfig();
         }
 
-        private Image GetLogo()
+        private Image GetOrCreateLogo()
         {
+            string path = "Assets/SmartNPC/Images/logo.png";
+
             Image logo = new Image();
 
-            logo.image = AssetDatabase.LoadAssetAtPath<Texture>("Assets/SmartNPC/Images/logo.png");
+            logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
+
+            if (!logo.image)
+            {
+                AssetDatabase.CopyAsset("Packages/ai.smartnpc.client/Images/logo.png", path);
+
+                logo.image = AssetDatabase.LoadAssetAtPath<Texture>(path);
+            }
 
             logo.style.paddingBottom = 10;
             logo.style.paddingTop = 20;
@@ -78,7 +87,7 @@ namespace SmartNPC
             result.style.paddingBottom = 10;
             result.style.marginBottom = 10;
 
-            result.Add( GetLogo() );
+            result.Add( GetOrCreateLogo() );
 
             return result;
         }
