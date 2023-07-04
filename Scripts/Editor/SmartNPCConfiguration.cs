@@ -18,7 +18,7 @@ namespace SmartNPC
             
             window.titleContent = new GUIContent("Configuration");
 
-            window.minSize = window.maxSize = new Vector2(600, 670);
+            window.minSize = window.maxSize = new Vector2(600, 660);
         }
         
 
@@ -83,14 +83,25 @@ namespace SmartNPC
             return result;
         }
 
-        private Label GetHeader(string text)
+        private Label GetHeader(string text, int margin = 10)
         {
             Label result = new Label(text);
 
             result.style.fontSize = 14;
             result.style.unityFontStyleAndWeight = FontStyle.Bold;
-            result.style.marginBottom = 10;
             result.style.color = Color.white;
+            result.style.marginBottom = margin;
+
+            return result;
+        }
+
+        private Label GetInstructions(string text)
+        {
+            Label result = new Label(text);
+
+            result.style.fontSize = 12;
+            result.style.marginBottom = 10;
+            result.style.color = Color.grey;
 
             return result;
         }
@@ -123,8 +134,6 @@ namespace SmartNPC
 
             result.style.flexDirection = FlexDirection.Column;
 
-            Label header = GetHeader("API Key");
-
             TextField keyId = GetTextField("Key ID", () => config.APIKey.KeyId, (string value) => config.APIKey.KeyId = value);
             TextField publicKey = GetTextField("Public Key", () => config.APIKey.PublicKey, (string value) => config.APIKey.PublicKey = value);
 
@@ -133,9 +142,9 @@ namespace SmartNPC
                 Application.OpenURL("https://studio.smartnpc.ai");
             });
 
-            studio.style.marginTop = 10;
+            studio.style.marginTop = 20;
 
-            result.Add(header);
+            result.Add( GetHeader("API Key") );
             result.Add(keyId);
             result.Add(publicKey);
             result.Add(studio);
@@ -149,12 +158,11 @@ namespace SmartNPC
 
             result.style.flexDirection = FlexDirection.Column;
 
-            Label header = GetHeader("Player");
-
             TextField playerId = GetTextField("ID", () => config.Player.Id, (string value) => config.Player.Id = value);
             TextField playerName = GetTextField("Name", () => config.Player.Name, (string value) => config.Player.Name = value);
 
-            result.Add(header);
+            result.Add( GetHeader("Player", 5) );
+            result.Add( GetInstructions("Enables personalized interactions for different players.") );
             result.Add(playerId);
             result.Add(playerName);
 
@@ -166,9 +174,6 @@ namespace SmartNPC
             VisualElement result = new VisualElement();
 
             result.style.flexDirection = FlexDirection.Column;
-
-            Label header = GetHeader("Voice");
-
 
             Toggle voiceEnabled = GetToggle("Enabled", () => config.Voice.Enabled, (bool value) => config.Voice.Enabled = value);
 
@@ -185,7 +190,7 @@ namespace SmartNPC
 
             voiceMaxDistance.RegisterValueChangedCallback((evt) => config.Voice.MaxDistance = evt.newValue);
 
-            result.Add(header);
+            result.Add(GetHeader("Voice") );
             result.Add(voiceEnabled);
             result.Add(voiceVolume);
             result.Add(voiceMaxDistance);
@@ -199,28 +204,11 @@ namespace SmartNPC
 
             result.style.flexDirection = FlexDirection.Column;
 
-            Label header = GetHeader("Behaviors");
-
             Toggle behaviorsEnabled = GetToggle("Enabled", () => config.Behaviors.Enabled, (bool value) => config.Behaviors.Enabled = value);
 
-            result.Add(header);
+            result.Add( GetHeader("Behaviors", 5) );
+            result.Add( GetInstructions("Actions, Gestures, and Facial Expressions") );
             result.Add(behaviorsEnabled);
-
-            return result;
-        }
-
-        private VisualElement GetAdvanced()
-        {
-            VisualElement result = new VisualElement();
-
-            result.style.flexDirection = FlexDirection.Column;
-
-            Label header = GetHeader("Advanced");
-
-            TextField host = GetTextField("Host", () => config.Advanced.Host, (string value) => config.Advanced.Host = value);
-
-            result.Add(header);
-            result.Add(host);
 
             return result;
         }
@@ -313,7 +301,6 @@ namespace SmartNPC
                 GetPlayer(),
                 GetVoice(),
                 GetBehaviors(),
-                GetAdvanced(),
                 GetSupport()
             }, 20);
 
