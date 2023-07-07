@@ -316,7 +316,7 @@ namespace SmartNPC
 
             SetRecordingText(value);
 
-            SubtitlesChange(_character.Connection.PlayerName, text, true);
+            SubtitlesChange(_character.Connection.UserName, text, true);
 
             _hasRecordingText = true;
         }
@@ -354,7 +354,7 @@ namespace SmartNPC
         public new void SendMessage(string text)
         {
             if (_character) {
-                SubtitlesChange(_character.Connection.PlayerName, text, false);
+                SubtitlesChange(_character.Connection.UserName, text, false);
 
                 _connection.SpeechRecognition.StopRecording();
 

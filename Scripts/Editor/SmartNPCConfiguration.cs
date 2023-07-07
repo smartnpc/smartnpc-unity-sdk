@@ -131,19 +131,19 @@ namespace SmartNPC
             return result;
         }
 
-        private VisualElement GetPlayer()
+        private VisualElement GetUser()
         {
             VisualElement result = new VisualElement();
 
             result.style.flexDirection = FlexDirection.Column;
 
-            TextField playerId = GetTextField("ID", () => config.Player.Id, (string value) => config.Player.Id = value);
-            TextField playerName = GetTextField("Name", () => config.Player.Name, (string value) => config.Player.Name = value);
+            TextField userId = GetTextField("ID", () => config.User.Id, (string value) => config.User.Id = value);
+            TextField userName = GetTextField("Name", () => config.User.Name, (string value) => config.User.Name = value);
 
-            result.Add( GetHeader("Player", 5) );
-            result.Add( GetInstructions("It should reflect the data you have on the player. You can also set this at runtime instead.") );
-            result.Add(playerId);
-            result.Add(playerName);
+            result.Add( GetHeader("User", 5) );
+            result.Add( GetInstructions("It should reflect the data you have on your end user. You can also set this at runtime instead.") );
+            result.Add(userId);
+            result.Add(userName);
 
             return result;
         }
@@ -277,7 +277,7 @@ namespace SmartNPC
 
             VisualElement blocks = SpaceVerticalContent(new VisualElement[] {
                 GetCredentials(),
-                GetPlayer(),
+                GetUser(),
                 GetVoice(),
                 GetBehaviors(),
                 GetSupport()

@@ -14,8 +14,8 @@ namespace SmartNPC
         private OVRLipSync _lipSync;
 
         private SmartNPCConnectionConfig _config;
-        private string _playerId;
-        private string _playerName;
+        private string _userId;
+        private string _userName;
 
         private static SmartNPCConnection _instance;
         private static List<Action<SmartNPCConnection>> _instanceReadyListeners = new List<Action<SmartNPCConnection>>();
@@ -46,7 +46,7 @@ namespace SmartNPC
             _socket.JsonSerializer = new NewtonsoftJsonSerializer();
 
             _socket.On(SocketEvent.Auth, (value) => {
-                if (_config.Player.Id != "") SetPlayer(_config.Player.Id, _config.Player.Name);
+                if (_config.User.Id != "") SetUser(_config.User.Id, _config.User.Name);
             });
 
             _socket.On(SocketEvent.Ready, (value) => {
@@ -62,13 +62,13 @@ namespace SmartNPC
             SetInstance(this);
         }
         
-        public void SetPlayer(string id, string name = "") {
-            _playerId = id;
-            _playerName = name;
+        public void SetUser(string id, string name = "") {
+            _userId = id;
+            _userName = name;
 
             Fetch<bool>(new FetchOptions<bool> {
-               EventName = "player",
-               Data = new PlayerData {
+               EventName = "user",
+               Data = new UserData {
                 id = id,
                 name = name,
                },
@@ -194,14 +194,14 @@ namespace SmartNPC
             socketListeners.Clear();
         }
 
-        public string PlayerId
+        public string UserId
         {
-            get { return _playerId; }
+            get { return _userId; }
         }
 
-        public string PlayerName
+        public string UserName
         {
-            get { return _playerName; }
+            get { return _userName; }
         }
 
         public SmartNPCConnectionConfig Config

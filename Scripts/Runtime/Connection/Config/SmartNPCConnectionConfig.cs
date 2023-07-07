@@ -6,7 +6,7 @@ namespace SmartNPC
     public class SmartNPCConnectionConfig : ScriptableObject
     {
         [SerializeField] public SmartNPCAPIKey APIKey;
-        [SerializeField] public SmartNPCPlayerSettings Player;
+        [SerializeField] public SmartNPCUserSettings User;
         [SerializeField] public SmartNPCVoiceSettings Voice;
         [SerializeField] public SmartNPCBehaviorsSettings Behaviors;
         [SerializeField] public SmartNPCAdvancedSettings Advanced;

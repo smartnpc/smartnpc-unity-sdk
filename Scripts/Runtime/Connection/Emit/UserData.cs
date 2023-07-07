@@ -1,6 +1,6 @@
 namespace SmartNPC
 {
-    public class PlayerData : EmitData
+    public class UserData : EmitData
     {
         public string id;
         public string name;
