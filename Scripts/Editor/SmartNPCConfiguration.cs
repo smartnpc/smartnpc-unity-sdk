@@ -210,7 +210,7 @@ namespace SmartNPC
 
             Button documentation = GetButton("Documentation", () =>
             {
-                Application.OpenURL("https://docs.smartnpc.ai/unity-sdk/getting-started/context");
+                Application.OpenURL("https://docs.smartnpc.ai/unity-sdk/getting-started/configuration");
             });
 
             Button discord = GetButton("Discord", () =>
