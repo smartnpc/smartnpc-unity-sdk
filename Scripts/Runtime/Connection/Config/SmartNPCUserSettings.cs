@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SmartNPC
 {
     [Serializable]
-    public class SmartNPCPlayerSettings
+    public class SmartNPCUserSettings
     {
         [SerializeField] public string Id;
         [SerializeField] public string Name;

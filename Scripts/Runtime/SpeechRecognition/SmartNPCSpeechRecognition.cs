@@ -23,6 +23,7 @@ namespace SmartNPC
         private bool processing = false;
         private bool processedFirstChunk = false;
         private string text = "";
+        private string _language;
 
         public readonly UnityEvent<bool> OnStart = new UnityEvent<bool>();
         public readonly UnityEvent OnStartProcessing = new UnityEvent();
@@ -34,7 +35,7 @@ namespace SmartNPC
 
         private SpeechRecognitionTester tester;
 
-        public void StartRecording(bool recover = false)
+        public void StartRecording(string language = null, bool recover = false)
         {
             if (recording) return;
 
@@ -47,6 +48,7 @@ namespace SmartNPC
             recording = true;
             recordingUntilFinishProcessing = false;
             processedFirstChunk = false;
+            _language = language;
             text = "";
 
             collectCounter = 0;
@@ -89,10 +91,10 @@ namespace SmartNPC
             text = "";
         }
 
-        public void ToggleRecording()
+        public void ToggleRecording(string language = null)
         {
             if (recording) StopRecording();
-            else StartRecording();
+            else StartRecording(language);
         }
 
         void Awake()
@@ -156,7 +158,7 @@ namespace SmartNPC
                     // recover in case aborted before received first response
                     if (!recording)
                     {
-                        StartRecording(true);
+                        StartRecording(_language, true);
 
                         recordingUntilFinishProcessing = true;
                     }
@@ -264,7 +266,7 @@ namespace SmartNPC
         {
             processing = true;
 
-            _connection.Emit("speech", new SpeechRecognitionData { data = BufferToBase64(buffer) });
+            _connection.Emit("speech", new SpeechRecognitionData { language = _language, data = BufferToBase64(buffer) });
         }
 
         public bool IsRecording

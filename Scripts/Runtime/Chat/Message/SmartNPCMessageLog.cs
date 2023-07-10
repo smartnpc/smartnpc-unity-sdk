@@ -113,7 +113,7 @@ namespace SmartNPC
 
         private static string GetMessageText(SmartNPCCharacter character, SmartNPCMessage message, string messageFormat, string errorFormat)
         {
-            string result = SmartNPCChat.FormatMessage(character.Connection.PlayerName, message.message, messageFormat);
+            string result = SmartNPCChat.FormatMessage(character.Connection.UserName, message.message, messageFormat);
 
             if (message.exception != null) result += " " + errorFormat.Replace("%error%", message.exception);
 
