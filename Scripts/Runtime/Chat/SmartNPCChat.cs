@@ -118,7 +118,7 @@ namespace SmartNPC
             if (Input.GetKeyDown(_inputKey) && _character && !_character.MessageInProgress)
             {
                 if (_speechRecognitionEnabled && _textMessageEnabled) InvokeUtility.Invoke(this, StartRecordingOrToggleInputFocus, 0.2f);
-                else if (_speechRecognitionEnabled) _connection.SpeechRecognition.StartRecording();
+                else if (_speechRecognitionEnabled) _connection.SpeechRecognition.StartRecording(_character.Info.language);
                 else if (_textMessageEnabled) ToggleInputFocus();
             }
             else if (Input.GetKeyUp(_inputKey))
@@ -136,7 +136,7 @@ namespace SmartNPC
 
         private void StartRecordingOrToggleInputFocus()
         {
-            if (Input.GetKey(_inputKey)) _connection.SpeechRecognition.StartRecording();
+            if (Input.GetKey(_inputKey)) _connection.SpeechRecognition.StartRecording(_character.Info.language);
             else ToggleInputFocus();
         }
 
