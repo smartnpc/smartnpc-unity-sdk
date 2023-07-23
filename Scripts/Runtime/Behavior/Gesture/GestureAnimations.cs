@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 using UnityEngine;
 using UnityEditor.Animations;
 using System.Threading.Tasks;
@@ -7,8 +9,6 @@ namespace SmartNPC
 {
     public class GestureAnimations
     {
-        public static readonly string Prefix = "SmartNPC";
-
         public static async Task ApplyGestureAnimations(SmartNPCCharacter character, List<SmartNPCGestureItem> gestures)
         {
             Animator animator = character.GetComponent<Animator>();
@@ -65,7 +65,7 @@ namespace SmartNPC
             {
                 AnimatorState state = states[i].state;
 
-                if (state.name.IndexOf(Prefix) != -1)
+                if (state.name.IndexOf(SmartNPCGesture.Prefix) != -1)
                 {
                     ClearTransitions(state); // to transition
 
@@ -82,7 +82,7 @@ namespace SmartNPC
             {
                 AnimatorStateTransition transition = transitions[j];
 
-                if (transition.name.IndexOf(Prefix) != -1) state.RemoveTransition(transition);
+                if (transition.name.IndexOf(SmartNPCGesture.Prefix) != -1) state.RemoveTransition(transition);
             }
         }
 
@@ -94,7 +94,7 @@ namespace SmartNPC
             {
                 AnimatorControllerParameter parameter = parameters[i];
 
-                if (parameter.name.IndexOf(Prefix) != -1) animatorController.RemoveParameter(parameter);
+                if (parameter.name.IndexOf(SmartNPCGesture.Prefix) != -1) animatorController.RemoveParameter(parameter);
             }
         }
 
@@ -126,7 +126,7 @@ namespace SmartNPC
             
             AnimatorState originalState = stateMachine.states[0].state;
 
-            string stateName = Prefix + "-" + name;
+            string stateName = SmartNPCGesture.Prefix + "-" + name;
 
             if (StateExists(animatorController, stateName)) return;
 
@@ -157,3 +157,5 @@ namespace SmartNPC
         }
     }
 }
+
+#endif
