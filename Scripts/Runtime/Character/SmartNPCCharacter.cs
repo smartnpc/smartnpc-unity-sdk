@@ -93,11 +93,15 @@ namespace SmartNPC
         private void InitGestures()
         {
             if (!_gesturesConfig) return;
+            
+            _animator = GetComponent<Animator>();
 
-             _animator = GetComponent<Animator>();
+            #if UNITY_EDITOR
 
             // settting to a var as a workaround to avoid warning for no await
             Task applyGestureAnimationsTask = GestureAnimations.ApplyGestureAnimations(this, _gesturesConfig.Gestures);
+
+            #endif
 
             if (_gesturesConfig.TriggerGestures)
             {
@@ -297,7 +301,7 @@ namespace SmartNPC
 
                 if (item.gestureName == gesture.name)
                 {
-                    if (item.animationClip != null) await TriggerAnimation(GestureAnimations.Prefix + "-" + gesture.name + "Trigger");
+                    if (item.animationClip != null) await TriggerAnimation(SmartNPCGesture.Prefix + "-" + gesture.name + "Trigger");
                     else if (item.animationTrigger != null && item.animationTrigger != "") await TriggerAnimation(item.animationTrigger);
 
                     break;
