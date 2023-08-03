@@ -469,7 +469,7 @@ namespace SmartNPC
             if (_nameTextField) _nameTextField.text = "";
 
             SetVisibility(false);
-            SubtitlesChange(_character.Info.name, "", false);
+            SubtitlesChange(_character && _character.Info ? _character.Info.name : "", "", false);
 
             ResetReady();
         }
