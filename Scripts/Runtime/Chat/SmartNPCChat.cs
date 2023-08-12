@@ -46,6 +46,7 @@ namespace SmartNPC
         [SerializeField] private bool _subtitlesEnabled = true;
         [SerializeField] private TextMeshProUGUI _subtitlesTextField;
         [SerializeField] private string _subtitlesFormat = "<mark=#000000aa padding=\"20,20,2,2\">%name%: %message%</mark>";
+        [SerializeField] private SmartNPCChatSubtitlesStrategy _subtitlesStrategy = SmartNPCChatSubtitlesStrategy.FullResponse;
         [SerializeField] private Color _defaultSubtitleColor = Color.white;
         [SerializeField] private Color _rawSpeechColor = Color.yellow;
 
@@ -263,7 +264,12 @@ namespace SmartNPC
         {
             OnMessageProgress.Invoke(message);
 
-            SubtitlesChange(_character.Info.name, message.response, false);
+            string text = "";
+
+            if (_subtitlesStrategy == SmartNPCChatSubtitlesStrategy.FullResponse) text = message.response;
+            else if (_subtitlesStrategy == SmartNPCChatSubtitlesStrategy.LastSentence) text = message.chunk;
+
+            SubtitlesChange(_character.Info.name, text, false);
 
             _hasRecordingText = false;
         }
